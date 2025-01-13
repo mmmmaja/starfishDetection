@@ -8,15 +8,16 @@ import torch
 import albumentations as A
 import matplotlib.pyplot as plt
 from albumentations.pytorch.transforms import ToTensorV2
+import numpy as np
 
 
 def format_annotations(annotation_dict, image_width, image_height):
     """
-    Format the annotations to the YOLO format.
-    :param annotation_dict: The annotation dictionary in the format {'x': x, 'y': y, 'width': w, 'height': h}
+    Format the annotations to [x_min, y_min, x_max, y_max] in absolute pixel coordinates for the fasterrcnn model.
+    :param annotation_dict: The annotation dictionary with keys 'x', 'y', 'width', 'height'
     :param image_width: The width of the image
     :param image_height: The height of the image
-    :return: The formatted annotations in the format [x_center, y_center, width, height, class_id]
+    :return: The formatted annotations in the format [x_min, y_min, x_max, y_max, class_id]
     """
 
     # Original bounding box in pixel coords
@@ -25,14 +26,14 @@ def format_annotations(annotation_dict, image_width, image_height):
     x_max = x_min + annotation_dict['width']
     y_max = y_min + annotation_dict['height']
 
-    # Convert pixel coords to normalized coords
-    x_center = ((x_min + x_max) / 2) / image_width
-    y_center = ((y_min + y_max) / 2) / image_height
-    width = (x_max - x_min) / image_width
-    height = (y_max - y_min) / image_height
+    # Make sure that the coordinates are within image boundaries
+    x_min = max(0, x_min)
+    y_min = max(0, y_min)
+    x_max = min(image_width, x_max)
+    y_max = min(image_height, y_max)
 
-    return [x_center, y_center, width, height, 0]
-
+    # Class 1 denotes the starfish
+    return [x_min, y_min, x_max, y_max, 1]
 
 
 class StarfishDataset(Dataset):
@@ -108,6 +109,10 @@ class StarfishDataset(Dataset):
         :param index: The index of the sample to return
         """
         image, labels = self.images[index], self.labels[index]
+        # Change the image range from 0-255 to 0-1
+        image = image / 255.0
+        # Convert the image to a float tensor
+        image = image.astype(np.float32)
 
         # Apply the transformations
         if self.transforms:
@@ -116,6 +121,7 @@ class StarfishDataset(Dataset):
             boxes = transformed['bboxes']
             labels = transformed['labels']
         else:
+            # If no transformations were provided, just return the image and labels
             boxes = [label[:4] for label in labels]
             labels = [label[4] for label in labels]
 
@@ -126,7 +132,7 @@ class StarfishDataset(Dataset):
 
         return image, target
 
-    def plot_sample(self, index: int) -> None:
+    def plot_sample(self, index: int, axs=None) -> None:
         """
         Plot a sample from the dataset.
         :param index: The index of the sample to plot
@@ -135,29 +141,24 @@ class StarfishDataset(Dataset):
 
         # Convert image tensor to numpy array
         image = image.permute(1, 2, 0).numpy()
-        # image = (image * 255).astype(np.uint8)  # Assuming image was normalized
+        plot_show = False
 
-        plt.figure(figsize=(8, 8))
-        plt.imshow(image)
-        ax = plt.gca()
-
-        boxes = target['boxes'].numpy()
-        for box in boxes:
-
-            # Convert normalized coordinates to pixel coordinates for plotting
-            x_center, y_center, w, h = box
-            x_min = (x_center - w / 2) * image.shape[1]
-            y_min = (y_center - h / 2) * image.shape[0]
-            x_max = (x_center + w / 2) * image.shape[1]
-            y_max = (y_center + h / 2) * image.shape[0]
-
-            rect = plt.Rectangle(
-                (x_min, y_min), x_max - x_min, y_max - y_min, 
-                fill=True, edgecolor='tomato', linewidth=2, alpha=0.6)
-            ax.add_patch(rect)
-
-        plt.axis('off')
-        plt.show()
+        # Create a plot if axs is not provided
+        if axs is None:
+            plt.figure(figsize=(8, 8))
+            axs = plt.gca()
+            plot_show = True
+        
+        # Plot the image and the bounding boxes
+        axs.imshow(image)
+        for box in target["boxes"]:
+            x, y, w, h = box
+            rect = plt.Rectangle((x, y), w - x, h - y, fill=False, edgecolor='red', linewidth=2)
+            axs.add_patch(rect)
+        
+        axs.axis('off')
+        if plot_show:
+            plt.show()
 
 
 def preprocess(raw_data_path: Path, output_folder: Path) -> None:
@@ -167,9 +168,8 @@ def preprocess(raw_data_path: Path, output_folder: Path) -> None:
     :param output_folder: The path to the output folder
     """
     print(f"Preprocessing data from {raw_data_path}...")
-    dataset = StarfishDataset(raw_data_path)
-    # Implement preprocessing steps if needed
-    # TODO pass throgh the data pipeline and split into train, validation, and test sets
+    # From what I understand now we do need to do that
+    pass
 
 
 def create_dataset(data_path, subset=1.0):
@@ -186,7 +186,7 @@ def create_dataset(data_path, subset=1.0):
             A.RandomBrightnessContrast(p=0.2),
             ToTensorV2()
         ], 
-        bbox_params=A.BboxParams(format='yolo', min_visibility=0., label_fields=['labels'])
+        bbox_params=A.BboxParams(format='pascal_voc', min_visibility=0., label_fields=['labels'])
     )
 
     # Load the dataset
