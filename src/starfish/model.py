@@ -3,7 +3,7 @@ import torchvision
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
-import sys
+
 
 class FasterRCNNLightning(pl.LightningModule):
     
@@ -12,42 +12,63 @@ class FasterRCNNLightning(pl.LightningModule):
         self.save_hyperparameters()
         
         # Initialize the Faster R-CNN model
-        self.model = fasterrcnn_resnet50_fpn(pretrained=True)
+        self.model = fasterrcnn_resnet50_fpn(weights='DEFAULT')
         
-        # Replace the classifier with a new one for our number of classes
+        # Replace the classifier with a new one given number of classes
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = \
             torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)
 
     def forward(self, images, targets=None):
+        """
+        Forward pass of the model
+        :param images: Tensor of shape (N, C, H, W)
+        """
         return self.model(images, targets)
     
     def training_step(self, batch, batch_idx):
+        """
+        Training step
+        :param batch: Tuple containing images and targets
+        :param batch_idx: Index of the batch
+        """
         images, targets = batch
-        loss_dict = self.model(images, targets)
-        losses = sum(loss for loss in loss_dict.values())
-        self.log('train_loss', losses, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        return losses
-    
-    def validation_step(self, batch, batch_idx):
-        images, targets = batch
-        print(targets)
-        sys.exit()
-        loss_dict = self.model(images, targets)     
-        # boxes, labels, scores = loss_dict[1]
-        print(loss_dict[0])
-        print(loss_dict[1])
-        # 'boxes', 'labels', 'scores'
-        # print(len(loss_dict), 'length of loss_dict', len(loss_dict))
-        # for i in loss_dict:
-        #     print(i.keys())
-        sys.exit()
-        losses = sum(loss for loss in loss_dict.values())
-        self.log('val_loss', losses, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        # Move targets to the same device as images
+        targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
-        # Optionally, add metrics like mAP here
+        # Forward pass
+        loss_dict = self.model(images, targets)     
     
+        # Sum all losses (Categorical Cross-Entropy, Box, and Objectness)
+        total_loss = sum(loss for loss in loss_dict.values())
+        
+        # Log individual losses and total loss
+        for loss_name, loss_value in loss_dict.items():
+            self.log(f'train_{loss_name}', loss_value, prog_bar=True)
+        self.log('train_total_loss', total_loss, prog_bar=True)
+        
+        return total_loss
+       
+    def validation_step(self, batch, batch_idx):
+        """
+        Validation step
+        :param batch: Tuple containing images and targets
+        :param batch_idx: Index of the batch
+        """
+        images, targets = batch
+        # Move targets to the same device as images
+        targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+        
+        # Forward pass without targets to get predictions
+        predictions = self.model(images)
+        
+        # TODO: Log Mean Average Precision (mAP) and other metrics
+        
+
     def configure_optimizers(self):
+        """
+        Configure the optimizer and learning rate scheduler
+        """
         optimizer = SGD(self.parameters(), lr=self.hparams.learning_rate,
                         momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
         scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
