@@ -3,6 +3,52 @@ import torchvision
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
+import torch
+
+
+def get_AP(scores, pred_boxes, gt_boxes):
+    # Create a list to store the confidence scores and IoU values
+    confidence_scores = []
+    ious = []
+    for i, pred_box in enumerate(pred_boxes):
+        # Get the confidence score
+        print(scores[i])
+        confidence_scores.append(scores[i])
+        
+        # Calculate the IoU with all ground truth boxes
+        pred_box = pred_box.unsqueeze(0)
+        iou_values = torchvision.ops.box_iou(pred_box, gt_boxes)
+        ious.append(iou_values.max().item())
+
+    # Sort the confidence scores in descending order
+    sorted_indices = torch.argsort(torch.tensor(confidence_scores), descending=True)
+
+    true_positives, false_positives = 0, 0
+    precisions, recalls = [], []
+    for i in sorted_indices:
+        print(f"Confidence: {confidence_scores[i]}, IoU: {ious[i]}")
+        match = ious[i] > 0.5
+
+        if match:
+            true_positives += 1
+        else:
+            false_positives += 1
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / len(gt_boxes)
+        precisions.append(precision)
+        recalls.append(recall)
+    
+    # Choose the max precision at each recall value
+    max_precisions = []
+    for recall in recalls:
+        max_precisions.append(max([precision for p, r in zip(precisions, recalls) if r == recall]))
+
+    # Calculate the area under the precision-recall curve
+    ap = 0
+    for i in range(1, len(recalls)):
+        ap += (recalls[i] - recalls[i - 1]) * max_precisions[i]
+    return ap
+
 
 
 class FasterRCNNLightning(pl.LightningModule):
@@ -62,7 +108,18 @@ class FasterRCNNLightning(pl.LightningModule):
         # Forward pass without targets to get predictions
         predictions = self.model(images)
         
-        # TODO: Log Mean Average Precision (mAP) and other metrics
+        # Calculate the AP
+        scores = predictions[1]['scores']
+        boxes = predictions[1]['boxes']
+        targets_boxes = targets[1]['boxes']
+        print(scores)
+        print(boxes.shape, "boxes")
+        print(targets_boxes.shape, "targets")
+
+        ap = get_AP(scores, boxes, targets_boxes)
+        self.log('val_AP', ap, prog_bar=True)
+        # TODO: add loss and log it
+
         
 
     def configure_optimizers(self):
