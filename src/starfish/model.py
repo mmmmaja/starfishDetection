@@ -6,13 +6,21 @@ from torch.optim.lr_scheduler import StepLR
 import torch
 
 
-def get_AP(scores, pred_boxes, gt_boxes):
-    # Create a list to store the confidence scores and IoU values
+def get_AP(scores, pred_boxes, gt_boxes, iou_threshold=0.5):
+    """
+    TODO: test this function
+    Since we have just one class AP is a sufficinet metric, we do need to average over classes
+    :param scores: Tensor of shape (N,) containing the confidence scores
+    :param pred_boxes: Tensor of shape (N, 4) containing the predicted boxes
+    :param gt_boxes: Tensor of shape (M, 4) containing the ground truth boxes
+    :param iou_threshold: IoU threshold to consider a prediction as correct
+    """
+
+    # 1. Create a list to store the confidence scores and IoU values for each prediction
     confidence_scores = []
     ious = []
     for i, pred_box in enumerate(pred_boxes):
         # Get the confidence score
-        print(scores[i])
         confidence_scores.append(scores[i])
         
         # Calculate the IoU with all ground truth boxes
@@ -20,34 +28,68 @@ def get_AP(scores, pred_boxes, gt_boxes):
         iou_values = torchvision.ops.box_iou(pred_box, gt_boxes)
         ious.append(iou_values.max().item())
 
-    # Sort the confidence scores in descending order
+    # 2. Sort the confidence scores in descending order
     sorted_indices = torch.argsort(torch.tensor(confidence_scores), descending=True)
 
+    # 3. Calculate the precision and recall at each confidence score threshold
     true_positives, false_positives = 0, 0
     precisions, recalls = [], []
-    for i in sorted_indices:
-        print(f"Confidence: {confidence_scores[i]}, IoU: {ious[i]}")
-        match = ious[i] > 0.5
 
-        if match:
+    for i in sorted_indices:
+
+        # Check if predicted box matches any ground truth box
+        if ious[i] > iou_threshold:
             true_positives += 1
         else:
             false_positives += 1
-        precision = true_positives / (true_positives + false_positives)
-        recall = true_positives / len(gt_boxes)
-        precisions.append(precision)
-        recalls.append(recall)
+        # Calculate precision and recall
+        precisions.append(
+            true_positives / (true_positives + false_positives)
+        )
+        recalls.append(
+            true_positives / len(gt_boxes)
+        )
     
-    # Choose the max precision at each recall value
+    # Choose the max precision at each recall value and discard the rest
     max_precisions = []
     for recall in recalls:
-        max_precisions.append(max([precision for p, r in zip(precisions, recalls) if r == recall]))
+        max_precisions.append(max([precision for i, precision in enumerate(precisions) if recalls[i] >= recall]))
 
     # Calculate the area under the precision-recall curve
     ap = 0
     for i in range(1, len(recalls)):
         ap += (recalls[i] - recalls[i - 1]) * max_precisions[i]
     return ap
+
+
+def NMS(scores, boxes, iou_threshold=0.5):
+    """
+    TODO: fix this function
+    Non-Maximum Suppression
+    :param scores: Tensor of shape (N,) containing the confidence scores
+    :param boxes: Tensor of shape (N, 4) containing the predicted boxes
+    """
+
+    # 1. Sort the predictions by confidence scores
+    sorted_indices = torch.argsort(scores, descending=True)
+
+    # 2. Create a list to store the indices of the predictions to keep
+    keep_indices = []
+
+    while len(sorted_indices) > 0:
+        # Keep the prediction with the highest confidence score
+        keep_indices.append(sorted_indices[0].item())
+
+        # Calculate the IoU of the first prediction with all other predictions
+        ious = torchvision.ops.box_iou(boxes[sorted_indices[0]].unsqueeze(0), boxes[sorted_indices])
+
+        # Discard predictions with IoU greater than the threshold
+        sorted_indices = sorted_indices[ious[0] <= iou_threshold]
+
+    # Get the boxes and scores to keep
+    keep_boxes = boxes[keep_indices]
+    keep_scores = scores[keep_indices]
+    return keep_scores, keep_boxes
 
 
 
@@ -82,7 +124,7 @@ class FasterRCNNLightning(pl.LightningModule):
         # Move targets to the same device as images
         targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
-        # Forward pass
+        # Forward pass to obtain the losses
         loss_dict = self.model(images, targets)     
     
         # Sum all losses (Categorical Cross-Entropy, Box, and Objectness)
@@ -92,6 +134,22 @@ class FasterRCNNLightning(pl.LightningModule):
         for loss_name, loss_value in loss_dict.items():
             self.log(f'train_{loss_name}', loss_value, prog_bar=True)
         self.log('train_total_loss', total_loss, prog_bar=True)
+
+        # FIXME: Not sure if it makes sense
+        # Compute AP
+        self.model.eval()  # Switch to evaluation mode
+        with torch.no_grad():
+            predictions = self.model(images)  # Forward pass without targets
+        self.model.train()
+        
+        # Extract scores and boxes
+        scores = predictions[0]['scores']
+        boxes = predictions[0]['boxes']
+        targets_boxes = targets[0]['boxes']
+
+        # Calculate the AP
+        ap = get_AP(scores, boxes, targets_boxes)
+        self.log('train_AP', ap, prog_bar=True)
         
         return total_loss
        
@@ -112,15 +170,34 @@ class FasterRCNNLightning(pl.LightningModule):
         scores = predictions[1]['scores']
         boxes = predictions[1]['boxes']
         targets_boxes = targets[1]['boxes']
-        print(scores)
-        print(boxes.shape, "boxes")
-        print(targets_boxes.shape, "targets")
 
         ap = get_AP(scores, boxes, targets_boxes)
         self.log('val_AP', ap, prog_bar=True)
         # TODO: add loss and log it
 
+
+    def test_step(self, batch, batch_idx):
+        """
+        Test step
+        :param batch: Tuple containing images and targets
+        :param batch_idx: Index of the batch
+        """
+
+        images, targets = batch
+        # Move targets to the same device as images
+        targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
+        # Forward pass without targets to get predictions
+        predictions = self.model(images)
+        
+        # Calculate the AP
+        scores = predictions[1]['scores']
+        boxes = predictions[1]['boxes']
+        targets_boxes = targets[1]['boxes']
+
+        ap = get_AP(scores, boxes, targets_boxes)
+        self.log('test_AP', ap, prog_bar=True)
+ 
 
     def configure_optimizers(self):
         """

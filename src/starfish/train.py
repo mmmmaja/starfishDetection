@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 import torch
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
+from pathlib import Path
 
 
 def custom_collate_fn(batch):
@@ -18,11 +19,12 @@ def custom_collate_fn(batch):
 
 # Define the constants
 
-DATA_PATH = "C:\\Users\\mjgoj\\Documents\\Data\\starfish_data"
+parent_directory = Path(__file__).resolve().parents[2]
+DATA_PATH = parent_directory / "data" / "raw"
 TEST_SPLIT = 0.2
 VAL_SPLIT = 0.2
 
-MAX_EPOCHS = 50
+MAX_EPOCHS = 1
 BATCH_SIZE = 32
 
 # 1. Create the dataset
@@ -56,5 +58,15 @@ model = FasterRCNNLightning(num_classes=2)
 trainer = Trainer(
     accelerator="gpu" if torch.cuda.is_available() else 'cpu', 
     max_epochs=MAX_EPOCHS, 
-    callbacks=[early_stopping])
+    default_root_dir=parent_directory
+    # callbacks=[early_stopping]
+    )
 trainer.fit(model, train_loader, val_loader)
+
+# 4. Test the model
+print("\nTesting the model...")
+trainer.test(model, test_loader)
+
+# 5. Load the best model
+model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
+print("Model loaded successfully!")

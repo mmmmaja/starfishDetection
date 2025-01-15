@@ -200,11 +200,7 @@ if __name__ == "__main__":
 
     # For now the data does not require any preprocessing
     # Otherwise, uncomment the following line to preprocess the data
-    # FIXME: This might be needed to run the YOLOv5 model from the torch hub
     # typer.run(preprocess)
-
-    # Since the data is in a different location and too large to move, load it from here:
-    data_path = "C:\\Users\\mjgoj\\Documents\\Data\\starfish_data"
 
     # Create the dataset and plot a sample
     dataset = create_dataset(data_path, subset=0.001)  # Adjust subset as needed
