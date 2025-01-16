@@ -5,8 +5,8 @@ uvicorn==0.34.0
 pytorch_lightning==2.0.0
 torchvision==0.20.1
 pandas==2.2.3
-numpy
-opencv-python
+numpy==2.2.1
+opencv-python==4.10.0
 opencv-python-headless==4.10.0.84
 albumentations==2.0.0
 matplotlib==3.10.0
