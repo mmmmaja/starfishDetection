@@ -68,7 +68,7 @@ print("Device:", device)
 
 model = FasterRCNNLightning(num_classes=2)
 trainer = Trainer(
-    accelerator = device, 
+    accelerator = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu", 
     max_epochs = MAX_EPOCHS, 
     default_root_dir = parent_directory
     # callbacks=[early_stopping]
