@@ -1,5 +1,4 @@
 from pathlib import Path
-import typer
 from torch.utils.data import Dataset
 import os
 import pandas as pd
@@ -21,10 +20,10 @@ def format_annotations(annotation_dict, image_width, image_height):
     """
 
     # Original bounding box in pixel coords
-    x_min = annotation_dict['x']
-    y_min = annotation_dict['y']
-    x_max = x_min + annotation_dict['width']
-    y_max = y_min + annotation_dict['height']
+    x_min = annotation_dict["x"]
+    y_min = annotation_dict["y"]
+    x_max = x_min + annotation_dict["width"]
+    y_max = y_min + annotation_dict["height"]
 
     # Make sure that the coordinates are within image boundaries
     x_min = max(0, x_min)
@@ -37,7 +36,6 @@ def format_annotations(annotation_dict, image_width, image_height):
 
 
 class StarfishDataset(Dataset):
-
     def __init__(self, data_path: Path, transforms=None, subset=1.0) -> None:
         """
         Initialize the dataset.
@@ -59,10 +57,10 @@ class StarfishDataset(Dataset):
         :return: Tuple of lists (images, labels)
         """
         images, labels = [], []
-        
-        train_df = pd.read_csv(f'{self.data_path}/train.csv')
+
+        train_df = pd.read_csv(f"{self.data_path}/train.csv")
         # Remove the entries with empty annotations
-        train_df = train_df[train_df.annotations != '[]']
+        train_df = train_df[train_df.annotations != "[]"]
         # Take a subset of the data according to the subset parameter
         train_df = train_df.sample(frac=subset, random_state=42).reset_index(drop=True)
         print(f"Loading {len(train_df)} images.")
@@ -88,9 +86,7 @@ class StarfishDataset(Dataset):
                 # If no annotations, skip this image
                 continue
 
-            formatted_annotations = [
-                format_annotations(a, image.shape[1], image.shape[0]) for a in raw_annotations
-            ]
+            formatted_annotations = [format_annotations(a, image.shape[1], image.shape[0]) for a in raw_annotations]
 
             images.append(image)
             labels.append(formatted_annotations)
@@ -116,19 +112,18 @@ class StarfishDataset(Dataset):
 
         # Apply the transformations
         if self.transforms:
-            transformed = self.transforms(image=image, bboxes=[label[:4] for label in labels], labels=[label[4] for label in labels])
-            image = transformed['image']
-            boxes = transformed['bboxes']
-            labels = transformed['labels']
+            transformed = self.transforms(
+                image=image, bboxes=[label[:4] for label in labels], labels=[label[4] for label in labels]
+            )
+            image = transformed["image"]
+            boxes = transformed["bboxes"]
+            labels = transformed["labels"]
         else:
             # If no transformations were provided, just return the image and labels
             boxes = [label[:4] for label in labels]
             labels = [label[4] for label in labels]
 
-        target = {
-            "boxes": torch.tensor(boxes, dtype=torch.float32),
-            "labels": torch.tensor(labels, dtype=torch.int64)
-        }
+        target = {"boxes": torch.tensor(boxes, dtype=torch.float32), "labels": torch.tensor(labels, dtype=torch.int64)}
 
         return image, target
 
@@ -148,15 +143,15 @@ class StarfishDataset(Dataset):
             plt.figure(figsize=(8, 8))
             axs = plt.gca()
             plot_show = True
-        
+
         # Plot the image and the bounding boxes
         axs.imshow(image)
         for box in target["boxes"]:
             x, y, w, h = box
-            rect = plt.Rectangle((x, y), w - x, h - y, fill=False, edgecolor='red', linewidth=2)
+            rect = plt.Rectangle((x, y), w - x, h - y, fill=False, edgecolor="red", linewidth=2)
             axs.add_patch(rect)
-        
-        axs.axis('off')
+
+        axs.axis("off")
         if plot_show:
             plt.show()
 
@@ -180,13 +175,9 @@ def create_dataset(data_path, subset=1.0):
     """
     # Define the transformations to apply to the data
     # TODO: Normalize the images
-    transform = A.Compose([
-            A.Resize(640, 640),
-            A.HorizontalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.2),
-            ToTensorV2()
-        ], 
-        bbox_params=A.BboxParams(format='pascal_voc', min_visibility=0., label_fields=['labels'])
+    transform = A.Compose(
+        [A.Resize(640, 640), A.HorizontalFlip(p=0.5), A.RandomBrightnessContrast(p=0.2), ToTensorV2()],
+        bbox_params=A.BboxParams(format="pascal_voc", min_visibility=0.0, label_fields=["labels"]),
     )
 
     # Load the dataset
