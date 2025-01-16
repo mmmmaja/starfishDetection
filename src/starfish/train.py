@@ -8,6 +8,19 @@ import torch
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pathlib import Path
+import typer
+import numpy as np
+import random
+import os
+
+# Ensure reproducibility by setting seeds for random number generation
+torch.manual_seed(409)
+np.random.seed(409)
+random.seed(409)
+# Set CuBLAS workspace configuration for deterministic behavior
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 
 def custom_collate_fn(batch):
@@ -47,18 +60,17 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, col
 # 3. Train the model
 
 # Define model callbacks
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
-# tf_logger = TensorBoardLogger("logs", name="yolo")
+early_stopping = EarlyStopping(monitor = 'val_loss', patience = 5, mode = 'min')
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 print("Device:", device)
 
 
 model = FasterRCNNLightning(num_classes=2)
 trainer = Trainer(
-    accelerator="gpu" if torch.cuda.is_available() else 'cpu', 
-    max_epochs=MAX_EPOCHS, 
-    default_root_dir=parent_directory
+    accelerator = device, 
+    max_epochs = MAX_EPOCHS, 
+    default_root_dir = parent_directory
     # callbacks=[early_stopping]
     )
 trainer.fit(model, train_loader, val_loader)
@@ -70,3 +82,8 @@ trainer.test(model, test_loader)
 # 5. Load the best model
 model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
 print("Model loaded successfully!")
+
+
+# 6. Make predictions
+#if __name__ == "__main__":
+#    typer.run(train)
