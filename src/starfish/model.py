@@ -43,7 +43,7 @@ class FasterRCNNLightning(pl.LightningModule):
         :param images: Tensor of shape (N, C, H, W)
         """
         return self.model(images, targets)
-    
+
     def training_step(self, batch, batch_idx):
         """
         Training step
@@ -69,7 +69,7 @@ class FasterRCNNLightning(pl.LightningModule):
             self.model.train() # switches back to training mode
 
         return total_loss
-       
+
     def validation_step(self, batch, batch_idx):
         """
         Validation step
