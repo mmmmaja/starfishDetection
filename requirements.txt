@@ -4,4 +4,6 @@ fastapi==0.115.6
 uvicorn==0.34.0
 pytorch_lightning==2.0.0
 torchvision==0.20.1
-pandas==2.1.1
+pandas==2.2.3
+numpy
+opencv-python
