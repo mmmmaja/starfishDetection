@@ -8,7 +8,8 @@ import torch
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pathlib import Path
-
+import hydra
+from omegaconf import DictConfig
 from hydra.utils import to_absolute_path, instantiate
 
 
@@ -56,13 +57,13 @@ def train(cfg: DictConfig):
     # 3. Train the model
 
     # Define model callbacks
-    early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
+    # early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
     # tf_logger = TensorBoardLogger("logs", name="yolo")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Device:", device)
 
-    trainer = instantiate(cfg.trainer )
+    trainer = instantiate(cfg.trainer ,)#callbacks=[early_stopping], logger=True)
 
     # model = FasterRCNNLightning(num_classes=2)
     # trainer = Trainer(
@@ -80,3 +81,6 @@ def train(cfg: DictConfig):
     # 5. Load the best model
     # model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
     print("Model loaded successfully!")
+
+if __name__ == "__main__":
+    train()

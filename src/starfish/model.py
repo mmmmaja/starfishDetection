@@ -4,6 +4,7 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
 import torch
+from typing import Dict, Any
 
 
 def get_AP(scores, pred_boxes, gt_boxes, iou_threshold=0.5):
@@ -95,7 +96,14 @@ def NMS(scores, boxes, iou_threshold=0.5):
 
 class FasterRCNNLightning(pl.LightningModule):
     
-    def __init__(self, num_classes, learning_rate=0.005, momentum=0.9, weight_decay=0.0005):
+    def __init__(self, 
+        num_classes: int,
+        optimizer: torch.optim.Optimizer,
+        scheduler: torch.optim.lr_scheduler,
+        compile: bool, 
+        learning_rate: float=0.005, 
+        momentum: float=0.9, 
+        weight_decay: float=0.0005):
         super().__init__()
         self.save_hyperparameters()
         
@@ -159,20 +167,21 @@ class FasterRCNNLightning(pl.LightningModule):
         :param batch: Tuple containing images and targets
         :param batch_idx: Index of the batch
         """
-        images, targets = batch
-        # Move targets to the same device as images
-        targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+        # images, targets = batch
+        # # Move targets to the same device as images
+        # targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
-        # Forward pass without targets to get predictions
-        predictions = self.model(images)
+        # # Forward pass without targets to get predictions
+        # predictions = self.model(images)
         
-        # Calculate the AP
-        scores = predictions[1]['scores']
-        boxes = predictions[1]['boxes']
-        targets_boxes = targets[1]['boxes']
+        # # Calculate the AP
+        # scores = predictions[1]['scores']
+        # boxes = predictions[1]['boxes']
+        # targets_boxes = targets[1]['boxes']
 
-        ap = get_AP(scores, boxes, targets_boxes)
-        self.log('val_AP', ap, prog_bar=True)
+        # ap = get_AP(scores, boxes, targets_boxes)
+        # self.log('val_AP', ap, prog_bar=True)
+        pass
         # TODO: add loss and log it
 
 
@@ -183,27 +192,41 @@ class FasterRCNNLightning(pl.LightningModule):
         :param batch_idx: Index of the batch
         """
 
-        images, targets = batch
-        # Move targets to the same device as images
-        targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+        # images, targets = batch
+        # # Move targets to the same device as images
+        # targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
-        # Forward pass without targets to get predictions
-        predictions = self.model(images)
+        # # Forward pass without targets to get predictions
+        # predictions = self.model(images)
         
-        # Calculate the AP
-        scores = predictions[1]['scores']
-        boxes = predictions[1]['boxes']
-        targets_boxes = targets[1]['boxes']
+        # # Calculate the AP
+        # scores = predictions[1]['scores']
+        # boxes = predictions[1]['boxes']
+        # targets_boxes = targets[1]['boxes']
 
-        ap = get_AP(scores, boxes, targets_boxes)
-        self.log('test_AP', ap, prog_bar=True)
+        # ap = get_AP(scores, boxes, targets_boxes)
+        # self.log('test_AP', ap, prog_bar=True)
+        pass
  
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> Dict[str, Any]:
         """
         Configure the optimizer and learning rate scheduler
         """
-        optimizer = SGD(self.parameters(), lr=self.hparams.learning_rate,
-                        momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
-        scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
-        return [optimizer], [scheduler]
+        optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())
+        if self.hparams.scheduler is not None:
+            scheduler = self.hparams.scheduler(optimizer=optimizer)
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "monitor": "val/loss",
+                    "interval": "epoch",
+                    "frequency": 1,
+                },
+            }
+        return {"optimizer": optimizer}
+        # optimizer = SGD(self.parameters(), lr=self.hparams.learning_rate,
+        #                 momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
+        # scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
+        # return [optimizer], [scheduler]

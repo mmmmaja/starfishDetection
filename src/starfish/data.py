@@ -203,12 +203,17 @@ class StarfishDataModule(pl.LightningDataModule):
         self, 
         data_path: str, 
         batch_size: int = 32,
-        train_val_test_split: Tuple[int, int, int] = (0.8, 0.1, 0.1)
+        train_val_test_split: Tuple[int, int, int] = (0.8, 0.1, 0.1),
+        subset: float = 0.002,
+        num_workers: int = 8
         ) -> None:
         super().__init__()
         self.data_path = data_path
         self.batch_size = batch_size
         self.train_val_test_split = train_val_test_split
+        self.subset = subset
+        self.num_workers = num_workers
+
 
 
         self.transforms = A.Compose([
@@ -232,7 +237,7 @@ class StarfishDataModule(pl.LightningDataModule):
         """Load and prepare datasets."""
 
         if not self.data_train and not self.data_val and not self.data_test:
-            dataset = StarfishDataset(Path(self.data_path), transforms = self.transforms)
+            dataset = StarfishDataset(Path(self.data_path), transforms = self.transforms, subset=self.subset)
             self.data_train, self.data_val, self.data_test = random_split(
                 dataset=dataset,
                 lengths=self.train_val_test_split,
@@ -240,13 +245,13 @@ class StarfishDataModule(pl.LightningDataModule):
             )
     
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_train, batch_size=self.batch_size, collate_fn = custom_collate_fn, shuffle=True)
+        return DataLoader(self.data_train, batch_size=self.batch_size, num_workers = self.num_workers, collate_fn = custom_collate_fn, shuffle=True)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_val, batch_size=self.batch_size, collate_fn = custom_collate_fn, shuffle=False)
+        return DataLoader(self.data_val, batch_size=self.batch_size, num_workers = self.num_workers, collate_fn = custom_collate_fn, shuffle=False)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_test, batch_size=self.batch_size, collate_fn = custom_collate_fn, shuffle=False)
+        return DataLoader(self.data_test, batch_size=self.batch_size, num_workers = self.num_workers, collate_fn = custom_collate_fn, shuffle=False)
 
 
 
