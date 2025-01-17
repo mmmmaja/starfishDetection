@@ -43,7 +43,6 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, col
 
 # Define model callbacks
 early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
-# tf_logger = TensorBoardLogger("logs", name="yolo")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Device:", device)
@@ -51,7 +50,7 @@ print("Device:", device)
 torch.set_float32_matmul_precision('high')
 model = FasterRCNNLightning(num_classes=2)
 trainer = Trainer(
-    accelerator="gpu" if torch.cuda.is_available() else 'cpu', 
+    accelerator="gpu" if torch.cuda.is_available()  else 'cpu', 
     max_epochs=MAX_EPOCHS, 
     default_root_dir=parent_directory
     # callbacks=[early_stopping]
