@@ -1,0 +1,16 @@
+{
+  "os":  "macOS-14.6-arm64-arm-64bit",
+  "python":  "CPython 3.11.11",
+  "startedAt":  "2025-01-17T14:17:26.949157Z",
+  "program":  "/Users/rosalouisemarker/Desktop/starfishDetection/src/starfish/profiling/profiler_tensorboard.py",
+  "codePath":  "src/starfish/profiling/profiler_tensorboard.py",
+  "git":  {
+    "remote":  "https://github.com/mmmmaja/starfishDetection",
+    "commit":  "5e9c5fe79b581f8ed0b24093ab149c5c98e0f8e7"
+  },
+  "email":  "rosalouiseelinornielsen@live.dk",
+  "root":  "/Users/rosalouisemarker/Desktop/starfishDetection",
+  "host":  "rosas-air.students.clients.local",
+  "executable":  "/opt/anaconda3/envs/my_environment/bin/python",
+  "codePathLocal":  "src/starfish/profiling/profiler_tensorboard.py"
+}

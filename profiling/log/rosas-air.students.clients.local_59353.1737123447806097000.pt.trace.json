@@ -1,0 +1,34 @@
+
+{
+  "schemaVersion": 1,
+  "deviceProperties": [
+  ],
+  "traceEvents": [
+  {
+    "ph": "X", "cat": "Trace", "ts": 1491087805892.000, "dur": 108.000,
+    "pid": "Spans", "tid": "PyTorch Profiler",
+    "name": "PyTorch Profiler (0)",
+    "args": {
+      "Op count": 0
+    }
+  },
+  {
+    "name": "process_sort_index", "ph": "M", "ts": 1491087805892.000,
+    "pid": "Spans", "tid": 0,
+    "args": {
+      "sort_index": 536870912
+    }
+  },
+  {
+    "name": "Iteration Start: PyTorch Profiler", "ph": "i", "s": "g",
+    "pid": "Traces", "tid": "Trace PyTorch Profiler", "ts": 1491087805892.000
+  },
+  {
+    "name": "Record Window End", "ph": "i", "s": "g",
+    "pid": "", "tid": "", "ts": 1491087806064.000
+  }
+  ],
+  "traceName": "./profiling/log/rosas-air.students.clients.local_59353.1737123447806097000.pt.trace.json",
+  "displayTimeUnit": "ms",
+  "baseTimeNanoseconds": 1735632360000000000
+}
