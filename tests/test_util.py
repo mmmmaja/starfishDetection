@@ -1,5 +1,5 @@
 import torch
-from src.starfish.model import NMS
+from starfish.model import NMS
 
 def test_NMS():
     boxes = torch.tensor([
