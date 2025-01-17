@@ -1,11 +1,11 @@
 import torch
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
-from contextlib import asynccontextmanager
-from fastapi.responses import StreamingResponse
-import io
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from http import HTTPStatus
-import numpy as np
+import base64
+from contextlib import asynccontextmanager
 import cv2
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
@@ -33,12 +33,17 @@ app = FastAPI(lifespan=lifespan)
 
 # Load the model
 model_path = parent_directory / "lightning_logs" / "version_0" / "checkpoints" / "epoch=0-step=1.ckpt"
+# Make sure the checkpoint file exists
+if not model_path.is_file():
+    raise FileNotFoundError(f"Checkpoint file not found at {model_path}")
+
 # Load the pytorch lightning model
 model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
 print("Model loaded successfully!")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
+model.eval()
 
 
 def preprocess_image(image):
@@ -69,7 +74,6 @@ async def inference(data: UploadFile = File(...)):
     with open('image.jpg', 'wb') as image:
         content = await data.read()
         image.write(content)
-        image.close()
 
     # Preprocess the image
     image = cv2.imread("image.jpg")
@@ -77,7 +81,6 @@ async def inference(data: UploadFile = File(...)):
     image_processed = preprocess_image(image)
     # Add a batch dimension
     batch = image_processed.unsqueeze(0)
-    print("batch shape:", batch.shape)
 
     # Perform inference
     with torch.no_grad():
@@ -92,18 +95,45 @@ async def inference(data: UploadFile = File(...)):
 
     # Draw the bounding boxes on the image
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    boxes_data = []
     for i, box in enumerate(keep_boxes):
-        x1, y1, w, h = box
-        x2, y2 = x1 + w, y1 + h
+        
+        x1, y1, width, height = box
+        x2, y2 = x1 + width, y1 + height
+
+        boxes_data.append({
+                "score": float(keep_scores[i]),
+                "box": [int(x1), int(y1), int(x2), int(y2)]
+            })
+        
         # Add the bounding box to the image
         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 255, 0), thickness=2)
         
         # Add the confidence score to the bounding box
-        score = keep_scores[i]
-        # TODO: Change the font size and thickness
+        cv2.putText(
+            image, text=f"{keep_scores[i]:.2f}", org=(int(x1), int(y1)), 
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255, 255, 255), thickness=1)
 
-    cv2.imwrite("output.jpg", image)
+    # cv2.imwrite("output.jpg", image)
 
-    return FileResponse("output.jpg")
+    # return FileResponse("output.jpg")
+
+     # Encode image to JPEG format in memory
+        success, encoded_image = cv2.imencode('.jpg', image)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to encode image.")
+
+        # Convert to base64 for JSON serialization
+        image_base64 = base64.b64encode(encoded_image.tobytes()).decode('utf-8')
+
+        # Prepare JSON response
+        response = {
+            "image": image_base64,
+            "boxes": boxes_data,
+            "message": "Inference successful.",
+            "status_code": HTTPStatus.OK.value
+        }
+
+        return JSONResponse(content=response, status_code=HTTPStatus.OK)
 
 
