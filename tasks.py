@@ -25,6 +25,7 @@ def requirements(ctx: Context) -> None:
     ctx.run("pip install -r requirements.txt", echo=True, pty=not WINDOWS)
     ctx.run("pip install -e .", echo=True, pty=not WINDOWS)
 
+
 @task(requirements)
 def dev_requirements(ctx: Context) -> None:
     """Install development requirements."""
@@ -36,6 +37,7 @@ def dev_requirements(ctx: Context) -> None:
 # @task
 # def download_data(ctx: Context) -> None:
 #     ctx.run('gsutil -m cp -r gs://starfish-detection-data .', pty=not WINDOWS)
+
 
 @task
 def data(ctx: Context) -> None:

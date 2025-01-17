@@ -1,5 +1,4 @@
 from pathlib import Path
-import typer
 from torch.utils.data import Dataset, DataLoader, random_split
 import os
 import pandas as pd
@@ -35,10 +34,12 @@ def format_annotations(annotation_dict, image_width, image_height):
 
     return [x_min, y_min, x_max, y_max, 1] # class 1 denotes the starfish
 
+
 def custom_collate_fn(batch):
     images = [sample[0] for sample in batch]  # List of tensors
     targets = [sample[1] for sample in batch]  # List of dicts
     return images, targets
+
 
 class StarfishDataset(Dataset):
     def __init__(self, data_path: Path, transforms=None, subset=1.0) -> None:
@@ -188,15 +189,16 @@ def create_dataset(data_path, subset=1.0):
     # Load the dataset
     return StarfishDataset(Path(data_path), subset=subset, transforms=transform)
 
+
 class StarfishDataModule(pl.LightningDataModule):
     def __init__(
-        self, 
-        data_path: str, 
+        self,
+        data_path: str,
         batch_size: int = 32,
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.1, 0.1),
         subset: float = 0.002,
-        num_workers: int = 8
-        ) -> None:
+        num_workers: int = 8,
+    ) -> None:
         super().__init__()
         self.data_path = data_path
         self.batch_size = batch_size
@@ -204,26 +206,21 @@ class StarfishDataModule(pl.LightningDataModule):
         self.subset = subset
         self.num_workers = num_workers
 
-
         # Define the transformations to apply to the data
-        self.transforms = A.Compose([
-            A.Resize(640, 640),
-            A.HorizontalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.2),
-            ToTensorV2()
-            ], 
-            bbox_params=A.BboxParams(format='pascal_voc', min_visibility=0., label_fields=['labels'])
+        self.transforms = A.Compose(
+            [A.Resize(640, 640), A.HorizontalFlip(p=0.5), A.RandomBrightnessContrast(p=0.2), ToTensorV2()],
+            bbox_params=A.BboxParams(format="pascal_voc", min_visibility=0.0, label_fields=["labels"]),
         )
 
-        # Initialize the datasets to None 
+        # Initialize the datasets to None
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
-        
+
     def preprocess_data(self) -> None:
         """Process raw data and save it to the processed directory."""
-       
-    def setup(self, stage: str = None)  -> None:
+
+    def setup(self, stage: str = None) -> None:
         """Load and prepare datasets."""
 
         if not self.data_train and not self.data_val and not self.data_test:
@@ -233,7 +230,7 @@ class StarfishDataModule(pl.LightningDataModule):
                 lengths=self.train_val_test_split,
                 generator=torch.Generator().manual_seed(42),
             )
-    
+
     def train_dataloader(self) -> DataLoader:
         return DataLoader(self.data_train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=True)
 

@@ -1,13 +1,12 @@
 import pytorch_lightning as pl
 import torchvision
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
-from torch.optim import SGD
-from torch.optim.lr_scheduler import StepLR
 import torch
 from typing import Dict, Any
 from torchmetrics.detection import IntersectionOverUnion
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 import pdb
+
 
 class FasterRCNNLightning(pl.LightningModule):
     def __init__(self, 

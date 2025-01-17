@@ -25,5 +25,6 @@ def train(cfg: DictConfig):
     # model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
     # print("Model loaded successfully!")
 
+
 if __name__ == "__main__":
     train()
