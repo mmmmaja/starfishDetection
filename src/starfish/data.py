@@ -196,7 +196,7 @@ def create_dataset(data_path, subset=1.0):
 if __name__ == "__main__":
     # Get the main directory of the project
     parent_directory = Path(__file__).resolve().parents[2]
-    data_path = parent_directory / "data" / "raw"
+    data_path = parent_directory / "starfish-detection-data" / "data" / "raw"
 
     # For now the data does not require any preprocessing
     # Otherwise, uncomment the following line to preprocess the data

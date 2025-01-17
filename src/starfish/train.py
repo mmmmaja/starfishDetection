@@ -20,7 +20,7 @@ def custom_collate_fn(batch):
 # Define the constants
 
 parent_directory = Path(__file__).resolve().parents[2]
-DATA_PATH = parent_directory / "data" / "raw"
+DATA_PATH = parent_directory / "starfish-detection-data" / "data" / "raw"
 TEST_SPLIT = 0.2
 VAL_SPLIT = 0.2
 
@@ -28,7 +28,7 @@ MAX_EPOCHS = 1
 BATCH_SIZE = 32
 
 # 1. Create the dataset
-dataset = create_dataset(DATA_PATH, subset=0.002)
+dataset = create_dataset(DATA_PATH, subset=0.02)
 # visualize_dataset(dataset, num_images=9)  # Comment out if you don't want to visualize the dataset
 
 # Split the dataset into training, validation, and test sets
