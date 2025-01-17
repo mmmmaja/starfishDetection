@@ -7,6 +7,7 @@ import torch
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pathlib import Path
+import pytorch_lightning
 
 def custom_collate_fn(batch):
     images = [sample[0] for sample in batch]  # List of tensors
@@ -52,7 +53,8 @@ model = FasterRCNNLightning(num_classes=2)
 trainer = Trainer(
     accelerator="gpu" if torch.cuda.is_available()  else 'cpu', 
     max_epochs=MAX_EPOCHS, 
-    default_root_dir=parent_directory
+    default_root_dir=parent_directory,
+    logger=pytorch_lightning.loggers.WandbLogger(project="Starfish Detection")
     # callbacks=[early_stopping]
     )
 trainer.fit(model, train_loader, val_loader)
@@ -64,3 +66,4 @@ trainer.test(model, test_loader)
 # 5. Load the best model
 model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
 print("Model loaded successfully!")
+# torch.save(model.state_dict(), "models/model.pt")
