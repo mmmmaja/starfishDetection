@@ -4,7 +4,7 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
 import torch
-
+import wandb
 
 def get_AP(scores, pred_boxes, gt_boxes, iou_threshold=0.5):
     """
@@ -91,14 +91,11 @@ def NMS(scores, boxes, iou_threshold=0.5):
     keep_scores = scores[keep_indices]
     return keep_scores, keep_boxes
 
-
-
 class FasterRCNNLightning(pl.LightningModule):
-    
     def __init__(self, num_classes, learning_rate=0.005, momentum=0.9, weight_decay=0.0005):
         super().__init__()
         self.save_hyperparameters()
-        
+        wandb.init(entity="luciagordon-harvard-university", project="Starfish Detection")
         # Initialize the Faster R-CNN model
         self.model = fasterrcnn_resnet50_fpn(weights='DEFAULT')
         
@@ -150,7 +147,7 @@ class FasterRCNNLightning(pl.LightningModule):
         # Calculate the AP
         ap = get_AP(scores, boxes, targets_boxes)
         self.log('train_AP', ap, prog_bar=True)
-        
+        wandb.log({"train_loss": total_loss.item(), "train_average_precision": ap})
         return total_loss
        
     def validation_step(self, batch, batch_idx):
@@ -162,10 +159,16 @@ class FasterRCNNLightning(pl.LightningModule):
         images, targets = batch
         # Move targets to the same device as images
         targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-        
+
+        # # Forward pass to obtain the losses
+        # loss_dict = self.model(images, targets)
+        # print(loss_dict)
+        # # Sum all losses (Categorical Cross-Entropy, Box, and Objectness)
+        # total_loss = sum(loss for loss in loss_dict.values())
+
         # Forward pass without targets to get predictions
         predictions = self.model(images)
-        
+
         # Calculate the AP
         scores = predictions[1]['scores']
         boxes = predictions[1]['boxes']
@@ -173,7 +176,7 @@ class FasterRCNNLightning(pl.LightningModule):
 
         ap = get_AP(scores, boxes, targets_boxes)
         self.log('val_AP', ap, prog_bar=True)
-        # TODO: add loss and log it
+        # wandb.log({"val_loss": total_loss.item(), "val_average_precision": ap})
 
 
     def test_step(self, batch, batch_idx):

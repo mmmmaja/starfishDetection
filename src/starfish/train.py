@@ -1,7 +1,6 @@
 from model import FasterRCNNLightning
 from data import create_dataset
 from visualize import visualize_dataset
-
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 import torch
@@ -9,13 +8,10 @@ from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pathlib import Path
 
-
 def custom_collate_fn(batch):
     images = [sample[0] for sample in batch]  # List of tensors
     targets = [sample[1] for sample in batch]  # List of dicts
     return images, targets
-
-
 
 # Define the constants
 
@@ -23,12 +19,11 @@ parent_directory = Path(__file__).resolve().parents[2]
 DATA_PATH = parent_directory / "starfish-detection-data" / "data" / "raw"
 TEST_SPLIT = 0.2
 VAL_SPLIT = 0.2
-
-MAX_EPOCHS = 1
+MAX_EPOCHS = 10
 BATCH_SIZE = 32
 
 # 1. Create the dataset
-dataset = create_dataset(DATA_PATH, subset=0.02)
+dataset = create_dataset(DATA_PATH, subset=1)
 # visualize_dataset(dataset, num_images=9)  # Comment out if you don't want to visualize the dataset
 
 # Split the dataset into training, validation, and test sets
@@ -53,7 +48,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=5, mode='min')
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Device:", device)
 
-
+torch.set_float32_matmul_precision('high')
 model = FasterRCNNLightning(num_classes=2)
 trainer = Trainer(
     accelerator="gpu" if torch.cuda.is_available() else 'cpu', 
