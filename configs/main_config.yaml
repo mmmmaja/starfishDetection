@@ -1,0 +1,7 @@
+defaults:
+  - model: default_model
+  - data: default_data_module
+  - trainer: default_trainer
+  # - callbacks: default_callbacks
+  - logger: wandb_logger
+  - _self_
