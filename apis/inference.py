@@ -1,21 +1,19 @@
 import torch
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse
-import io
-from http import HTTPStatus
-import numpy as np
 import cv2
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 import sys
 from pathlib import Path
-import matplotlib.pyplot as plt
 
-# Inser the path to the main directory (1 level up)
+
+# Insert the path to the main directory (1 level up)
 parent_directory = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(parent_directory))
+
 
 from src.starfish.model import NMS, FasterRCNNLightning
 
@@ -25,17 +23,29 @@ Create a FastAPI application that can do inference using the model (M22)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Hello!")
+    """
+    Context manager to handle the lifespan of the FastAPI application
+    """
+    print("Welcome in the inference API!")
     yield
     print("Goodbye!")
 
+
+# Create the FastAPI app
 app = FastAPI(lifespan=lifespan)
 
 # Load the model
+# TODO: Change the path to the model once it is final
 model_path = parent_directory / "lightning_logs" / "version_0" / "checkpoints" / "epoch=0-step=1.ckpt"
+
 # Load the pytorch lightning model
-model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
-print("Model loaded successfully!")
+try:
+    model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
+    print("Model loaded successfully!")
+except Exception as e:
+    print("Error loading the model:", e)
+    sys.exit(1)
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -66,18 +76,18 @@ def preprocess_image(image):
 # async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
 # while waiting for I/O operations (like reading a file) to complete.
 async def inference(data: UploadFile = File(...)):
+
+    # Read the image once it was uploaded
     with open('image.jpg', 'wb') as image:
         content = await data.read()
         image.write(content)
         image.close()
 
-    # Preprocess the image
+    # Preprocess the image to match the model's input requirements
     image = cv2.imread("image.jpg")
-    # Preprocess the image
     image_processed = preprocess_image(image)
     # Add a batch dimension
     batch = image_processed.unsqueeze(0)
-    print("batch shape:", batch.shape)
 
     # Perform inference
     with torch.no_grad():
@@ -85,10 +95,12 @@ async def inference(data: UploadFile = File(...)):
         # Prediction is the bounding boxes and the scores
         prediction = model(batch.to(device))
     
+    # Extract the scores and boxes from the prediction
     scores = prediction[0]['scores']
     boxes = prediction[0]['boxes']
 
-    keep_scores, keep_boxes = NMS(scores, boxes)
+    # Perform non-maximum suppression to remove overlapping bounding boxes
+    keep_scores, keep_boxes = NMS(scores, boxes, iou_threshold=0.001)
 
     # Draw the bounding boxes on the image
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -100,7 +112,7 @@ async def inference(data: UploadFile = File(...)):
         
         # Add the confidence score to the bounding box
         score = keep_scores[i]
-        # TODO: Change the font size and thickness
+        cv2.putText(image, f"{score:.2f}", (int(x1), int(y1)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     cv2.imwrite("output.jpg", image)
 
