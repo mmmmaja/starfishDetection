@@ -1,3 +1,4 @@
+from typing import Annotated
 from model import FasterRCNNLightning
 from data import create_dataset
 from visualize import visualize_dataset
@@ -8,6 +9,7 @@ import torch
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import TensorBoardLogger
 from pathlib import Path
+import pickle
 import typer
 import numpy as np
 import random
@@ -21,6 +23,8 @@ random.seed(409)
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
+
+app = typer.Typer()
 
 
 def custom_collate_fn(batch):
@@ -59,31 +63,39 @@ test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, col
 
 # 3. Train the model
 
-# Define model callbacks
-early_stopping = EarlyStopping(monitor = 'val_loss', patience = 5, mode = 'min')
+app.command()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-print("Device:", device)
+def train(output: Annotated[str, typer.Option("--output", "-o")] = "model.ckpt"):
 
+    # Define model callbacks
+    early_stopping = EarlyStopping(monitor = 'val_loss', patience = 5, mode = 'min')
 
-model = FasterRCNNLightning(num_classes=2)
-trainer = Trainer(
-    accelerator = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu", 
-    max_epochs = MAX_EPOCHS, 
-    default_root_dir = parent_directory
-    # callbacks=[early_stopping]
-    )
-trainer.fit(model, train_loader, val_loader)
+    device = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+    print("Device:", device)
 
-# 4. Test the model
-print("\nTesting the model...")
-trainer.test(model, test_loader)
+    model = FasterRCNNLightning(num_classes=2)
+    trainer = Trainer(
+        accelerator = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu", 
+        max_epochs = MAX_EPOCHS, 
+        default_root_dir = parent_directory
+        # callbacks=[early_stopping]
+        )
+    trainer.fit(model, train_loader, val_loader)
 
-# 5. Load the best model
-model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
-print("Model loaded successfully!")
+    # 4. Test the model
+    print("\nTesting the model...")
+    trainer.test(model, test_loader)
+
+    # 5. Load the best model
+    model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=trainer.checkpoint_callback.best_model_path, num_classes=2)
+    print("Model loaded successfully!")
+
+    with open(output, "wb") as f:
+        pickle.dump(model, f)
+
+    return
 
 
 # 6. Make predictions
-#if __name__ == "__main__":
-#    typer.run(train)
+if __name__ == "__main__":
+    app()
