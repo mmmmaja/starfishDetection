@@ -178,5 +178,5 @@ cython_debug/
 /data
 starfish-detection-data
 lightning_logs/
-profiling/log/
+/src/starfish/profiling/log/
 wandb/
