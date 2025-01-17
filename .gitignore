@@ -179,3 +179,4 @@ cython_debug/
 starfish-detection-data
 Starfish Detection
 lightning_logs/
+wandb
