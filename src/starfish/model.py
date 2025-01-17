@@ -4,62 +4,59 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
 import torch
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+def compute_are_under_curve(precision, recall, verbose=True):
+    if verbose:
+        plt.plot(recall, precision, marker='.', label='Precision-Recall Curve')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall Curve')
+        # Set the limits
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.show()
+
+    # at each recall level, we replace each precision value with the maximum precision value to the right of that recall level
+    for i in range(len(precision) - 2, -1, -1):
+        precision[i] = max(precision[i], precision[i + 1])
+    # Compute the area under the curve
+    area = 0
+    for i in range(len(recall) - 1):
+        area += (recall[i + 1] - recall[i]) * precision[i + 1]
+    return area
 
 
 def get_AP(scores, pred_boxes, gt_boxes, iou_threshold=0.5):
-    """
-    TODO: test this function
-    Since we have just one class AP is a sufficinet metric, we do need to average over classes
-    :param scores: Tensor of shape (N,) containing the confidence scores
-    :param pred_boxes: Tensor of shape (N, 4) containing the predicted boxes
-    :param gt_boxes: Tensor of shape (M, 4) containing the ground truth boxes
-    :param iou_threshold: IoU threshold to consider a prediction as correct
-    """
+    sorted_indices = torch.argsort(scores, descending=True)
+    pred_boxes = pred_boxes[sorted_indices]
 
-    # 1. Create a list to store the confidence scores and IoU values for each prediction
-    confidence_scores = []
-    ious = []
-    for i, pred_box in enumerate(pred_boxes):
-        # Get the confidence score
-        confidence_scores.append(scores[i])
-        
-        # Calculate the IoU with all ground truth boxes
-        pred_box = pred_box.unsqueeze(0)
-        iou_values = torchvision.ops.box_iou(pred_box, gt_boxes)
-        ious.append(iou_values.max().item())
-
-    # 2. Sort the confidence scores in descending order
-    sorted_indices = torch.argsort(torch.tensor(confidence_scores), descending=True)
-
-    # 3. Calculate the precision and recall at each confidence score threshold
+    metrics = []
+    used = torch.zeros(len(gt_boxes), dtype=torch.bool)
     true_positives, false_positives = 0, 0
-    precisions, recalls = [], []
 
-    for i in sorted_indices:
+    for i, pred_box in enumerate(pred_boxes):
+        ious = torchvision.ops.box_iou(pred_box.unsqueeze(0), gt_boxes)
+        iou_vals = ious[0]
 
-        # Check if predicted box matches any ground truth box
-        if ious[i] > iou_threshold:
+        best_iou_val, best_gt_idx = torch.max(iou_vals, dim=0)
+        if best_iou_val >= iou_threshold and not used[best_gt_idx]:
             true_positives += 1
+            used[best_gt_idx] = True
         else:
             false_positives += 1
-        # Calculate precision and recall
-        precisions.append(
-            true_positives / (true_positives + false_positives)
-        )
-        recalls.append(
-            true_positives / len(gt_boxes)
-        )
-    
-    # Choose the max precision at each recall value and discard the rest
-    max_precisions = []
-    for recall in recalls:
-        max_precisions.append(max([precision for i, precision in enumerate(precisions) if recalls[i] >= recall]))
 
-    # Calculate the area under the precision-recall curve
-    ap = 0
-    for i in range(1, len(recalls)):
-        ap += (recalls[i] - recalls[i - 1]) * max_precisions[i]
-    return ap
+        precision = true_positives / (i + 1)
+        recall = true_positives / len(gt_boxes)
+
+        metrics.append([i, precision, recall])
+
+    df = pd.DataFrame(metrics, columns=['rank', 'precision', 'recall'])
+
+    # Compute AP as the area under the precision-recall curve
+    return compute_are_under_curve(df['precision'], df['recall'])
 
 
 def NMS(scores, boxes, iou_threshold=0.5):
@@ -94,14 +91,14 @@ def NMS(scores, boxes, iou_threshold=0.5):
 
 
 class FasterRCNNLightning(pl.LightningModule):
-    
+
     def __init__(self, num_classes, learning_rate=0.005, momentum=0.9, weight_decay=0.0005):
         super().__init__()
         self.save_hyperparameters()
-        
+
         # Initialize the Faster R-CNN model
         self.model = fasterrcnn_resnet50_fpn(weights='DEFAULT')
-        
+
         # Replace the classifier with a new one given number of classes
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = \
@@ -113,7 +110,7 @@ class FasterRCNNLightning(pl.LightningModule):
         :param images: Tensor of shape (N, C, H, W)
         """
         return self.model(images, targets)
-    
+
     def training_step(self, batch, batch_idx):
         """
         Training step
@@ -123,13 +120,13 @@ class FasterRCNNLightning(pl.LightningModule):
         images, targets = batch
         # Move targets to the same device as images
         targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-        
+
         # Forward pass to obtain the losses
-        loss_dict = self.model(images, targets)     
-    
+        loss_dict = self.model(images, targets)
+
         # Sum all losses (Categorical Cross-Entropy, Box, and Objectness)
         total_loss = sum(loss for loss in loss_dict.values())
-        
+
         # Log individual losses and total loss
         for loss_name, loss_value in loss_dict.items():
             self.log(f'train_{loss_name}', loss_value, prog_bar=True)
@@ -141,7 +138,7 @@ class FasterRCNNLightning(pl.LightningModule):
         with torch.no_grad():
             predictions = self.model(images)  # Forward pass without targets
         self.model.train()
-        
+
         # Extract scores and boxes
         scores = predictions[0]['scores']
         boxes = predictions[0]['boxes']
@@ -150,9 +147,9 @@ class FasterRCNNLightning(pl.LightningModule):
         # Calculate the AP
         ap = get_AP(scores, boxes, targets_boxes)
         self.log('train_AP', ap, prog_bar=True)
-        
+
         return total_loss
-       
+
     def validation_step(self, batch, batch_idx):
         """
         Validation step
@@ -162,10 +159,10 @@ class FasterRCNNLightning(pl.LightningModule):
         images, targets = batch
         # Move targets to the same device as images
         targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-        
+
         # Forward pass without targets to get predictions
         predictions = self.model(images)
-        
+
         # Calculate the AP
         scores = predictions[1]['scores']
         boxes = predictions[1]['boxes']
@@ -186,10 +183,10 @@ class FasterRCNNLightning(pl.LightningModule):
         images, targets = batch
         # Move targets to the same device as images
         targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
-        
+
         # Forward pass without targets to get predictions
         predictions = self.model(images)
-        
+
         # Calculate the AP
         scores = predictions[1]['scores']
         boxes = predictions[1]['boxes']
@@ -197,7 +194,7 @@ class FasterRCNNLightning(pl.LightningModule):
 
         ap = get_AP(scores, boxes, targets_boxes)
         self.log('test_AP', ap, prog_bar=True)
- 
+
 
     def configure_optimizers(self):
         """

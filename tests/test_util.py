@@ -1,5 +1,50 @@
 import torch
-from src.starfish.model import NMS
+from src.starfish.model import NMS, get_AP
+import torch
+
+def test_perfect_predictions():
+    # One-to-one perfect match
+    scores = torch.tensor([1.0, 1.0])
+    pred_boxes = torch.tensor([[10, 10, 20, 20], [50, 50, 60, 60]])
+    gt_boxes = torch.tensor([[10, 10, 20, 20], [50, 50, 60, 60]])
+    iou_threshold = 1.0
+
+    ap = get_AP(scores, pred_boxes, gt_boxes, iou_threshold)
+    assert 0.99 < ap
+
+
+def test_partial_matches():
+    # Some predictions match, others don't
+    scores = torch.tensor([0.9, 0.8, 0.7])
+    pred_boxes = torch.tensor([[10, 10, 20, 20], [30, 30, 40, 40], [50, 50, 60, 60]])
+    gt_boxes = torch.tensor([[10, 10, 20, 20], [50, 50, 60, 60]])
+    iou_threshold = 0.5
+
+    ap = get_AP(scores, pred_boxes, gt_boxes, iou_threshold)
+    assert 0.3332 < ap and ap < 0.3334
+
+
+def test_high_iou_threshold():
+    # High IoU threshold causing no matches
+    scores = torch.tensor([0.9, 0.8])
+    pred_boxes = torch.tensor([[10, 10, 20, 20], [30, 30, 40, 40]])
+    gt_boxes = torch.tensor([[10, 10, 21, 21], [30, 30, 41, 41]])
+    iou_threshold = 0.95
+
+    ap = get_AP(scores, pred_boxes, gt_boxes, iou_threshold)
+    assert ap < 1e-3  # Allows for a small margin of error
+
+
+def test_low_iou_threshold():
+    # Low IoU threshold causing more matches
+    scores = torch.tensor([0.9, 0.8])
+    pred_boxes = torch.tensor([[10, 10, 20, 20], [30, 30, 40, 40]])
+    gt_boxes = torch.tensor([[10, 10, 21, 21], [30, 30, 41, 41]])
+    iou_threshold = 0.1
+
+    ap = get_AP(scores, pred_boxes, gt_boxes, iou_threshold)
+    assert True
+
 
 def test_NMS():
     boxes = torch.tensor([
