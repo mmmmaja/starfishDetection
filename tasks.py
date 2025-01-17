@@ -23,15 +23,19 @@ def requirements(ctx: Context) -> None:
     ctx.run("pip install -r requirements.txt", echo=True, pty=not WINDOWS)
     ctx.run("pip install -e .", echo=True, pty=not WINDOWS)
 
-
 @task(requirements)
 def dev_requirements(ctx: Context) -> None:
     """Install development requirements."""
     ctx.run('pip install -e .["dev"]', echo=True, pty=not WINDOWS)
 
 # Project commands
+
+# @task
+# def download_data(ctx: Context) -> None:
+#     ctx.run('gsutil -m cp -r gs://starfish-detection-data .', pty=not WINDOWS)
+
 @task
-def preprocess_data(ctx: Context) -> None:
+def data(ctx: Context) -> None:
     """Preprocess data."""
     ctx.run(f"python src/{PROJECT_NAME}/data.py data/raw data/processed", echo=True, pty=not WINDOWS)
 
