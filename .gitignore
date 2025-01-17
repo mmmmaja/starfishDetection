@@ -177,5 +177,5 @@ cython_debug/
 #.idea/
 /data
 starfish-detection-data
-
+Starfish Detection
 lightning_logs/
