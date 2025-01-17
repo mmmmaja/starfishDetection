@@ -22,11 +22,6 @@ torch.backends.cudnn.benchmark = False
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
-app = typer.Typer()
-
-app.command()
-
-
 def evaluate(model_checkpoint: str) -> None:
     """Evaluate a trained model."""
     print(model_checkpoint)
@@ -50,7 +45,3 @@ def evaluate(model_checkpoint: str) -> None:
     report = classification_report(test_dataloader, y_pred)
 
     return accuracy, report
-
-
-if __name__ == "__main__":
-    app()
