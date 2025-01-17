@@ -33,5 +33,5 @@ jobs:
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
-        commit_message: Pre-commit fixes
+        commit_message: Linting
         commit_options: '--no-verify'
