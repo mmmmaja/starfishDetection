@@ -50,7 +50,7 @@ will check the repositories and the code to verify your answers.
 
 * [X] Create a git repository (M5)
 * [X] Make sure that all team members have write access to the GitHub repository (M5)
-* [ ] Create a dedicated environment for you project to keep track of your packages (M2)
+* [X] Create a dedicated environment for you project to keep track of your packages (M2)
 * [X] Create the initial file structure using cookiecutter with an appropriate template (M6)
 * [X] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
 * [X] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
@@ -58,7 +58,7 @@ will check the repositories and the code to verify your answers.
     are using (M2+M6)
 * [X] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 * [ ] Do a bit of code typing and remember to document essential parts of your code (M7)
-* [ ] Setup version control for your data or part of your data (M8)
+* [X] Setup version control for your data or part of your data (M8)
 * [X] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [X] Construct one or multiple docker files for your code (M10)
 * [ ] Build the docker files locally and make sure they work as intended (M10)
