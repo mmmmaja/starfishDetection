@@ -215,7 +215,7 @@ class StarfishDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
 
 
-
+        # Define the transformations to apply to the data
         self.transforms = A.Compose([
             A.Resize(640, 640),
             A.HorizontalFlip(p=0.5),
@@ -225,7 +225,7 @@ class StarfishDataModule(pl.LightningDataModule):
             bbox_params=A.BboxParams(format='pascal_voc', min_visibility=0., label_fields=['labels'])
         )
 
-
+        # Initialize the datasets to None 
         self.data_train: Optional[Dataset] = None
         self.data_val: Optional[Dataset] = None
         self.data_test: Optional[Dataset] = None
@@ -233,7 +233,7 @@ class StarfishDataModule(pl.LightningDataModule):
     def preprocess_data(self) -> None:
         """Process raw data and save it to the processed directory."""
        
-    def setup(self, stage: str = None):
+    def setup(self, stage: str = None)  -> None:
         """Load and prepare datasets."""
 
         if not self.data_train and not self.data_val and not self.data_test:

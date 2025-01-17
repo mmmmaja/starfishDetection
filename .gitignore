@@ -177,3 +177,7 @@ cython_debug/
 #.idea/
 /data
 starfish-detection-data
+
+/outputs
+/lightning_logs
+/wandb

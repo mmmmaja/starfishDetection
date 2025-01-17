@@ -101,6 +101,7 @@ class FasterRCNNLightning(pl.LightningModule):
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler,
         compile: bool, 
+        log_ap: bool = False,
         learning_rate: float=0.005, 
         momentum: float=0.9, 
         weight_decay: float=0.0005):
@@ -114,6 +115,8 @@ class FasterRCNNLightning(pl.LightningModule):
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = \
             torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)
+
+        self.log_ap = log_ap
 
     def forward(self, images, targets=None):
         """
@@ -129,8 +132,8 @@ class FasterRCNNLightning(pl.LightningModule):
         :param batch_idx: Index of the batch
         """
         images, targets = batch
-        # Move targets to the same device as images
-        targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+        # # Move targets to the same device as images
+        # targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
         # Forward pass to obtain the losses
         loss_dict = self.model(images, targets)     
@@ -143,21 +146,22 @@ class FasterRCNNLightning(pl.LightningModule):
             self.log(f'train_{loss_name}', loss_value, prog_bar=True)
         self.log('train_total_loss', total_loss, prog_bar=True)
 
+        if self.log_ap:
         # FIXME: Not sure if it makes sense
-        # Compute AP
-        self.model.eval()  # Switch to evaluation mode
-        with torch.no_grad():
-            predictions = self.model(images)  # Forward pass without targets
-        self.model.train()
+        # # Compute AP
+            self.model.eval()  # Switch to evaluation mode
+            with torch.no_grad():
+                predictions = self.model(images)  # Forward pass without targets
+            self.model.train()
         
-        # Extract scores and boxes
-        scores = predictions[0]['scores']
-        boxes = predictions[0]['boxes']
-        targets_boxes = targets[0]['boxes']
+            # Extract scores and boxes
+            scores = predictions[0]['scores']
+            boxes = predictions[0]['boxes']
+            targets_boxes = targets[0]['boxes']
 
-        # Calculate the AP
-        ap = get_AP(scores, boxes, targets_boxes)
-        self.log('train_AP', ap, prog_bar=True)
+            # Calculate the AP
+            ap = get_AP(scores, boxes, targets_boxes)
+            self.log('train_AP', ap, prog_bar=True)
         
         return total_loss
        
@@ -167,21 +171,21 @@ class FasterRCNNLightning(pl.LightningModule):
         :param batch: Tuple containing images and targets
         :param batch_idx: Index of the batch
         """
-        # images, targets = batch
+        images, targets = batch
         # # Move targets to the same device as images
         # targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
         
         # # Forward pass without targets to get predictions
-        # predictions = self.model(images)
+        predictions = self.model(images)
         
-        # # Calculate the AP
-        # scores = predictions[1]['scores']
-        # boxes = predictions[1]['boxes']
-        # targets_boxes = targets[1]['boxes']
+        # Calculate the AP 
+        # FIXME: it somtimes throws an error if index isn't 0 but it should be 1?
+        scores = predictions[0]['scores']
+        boxes = predictions[0]['boxes']
+        targets_boxes = targets[0]['boxes']
 
-        # ap = get_AP(scores, boxes, targets_boxes)
-        # self.log('val_AP', ap, prog_bar=True)
-        pass
+        ap = get_AP(scores, boxes, targets_boxes)
+        self.log('val_AP', ap, prog_bar=True)
         # TODO: add loss and log it
 
 
@@ -192,21 +196,18 @@ class FasterRCNNLightning(pl.LightningModule):
         :param batch_idx: Index of the batch
         """
 
-        # images, targets = batch
-        # # Move targets to the same device as images
-        # targets = [{k: v.to(self.device) for k, v in t.items()} for t in targets]
+        images, targets = batch
         
         # # Forward pass without targets to get predictions
-        # predictions = self.model(images)
+        predictions = self.model(images)
         
         # # Calculate the AP
-        # scores = predictions[1]['scores']
-        # boxes = predictions[1]['boxes']
-        # targets_boxes = targets[1]['boxes']
+        scores = predictions[0]['scores']
+        boxes = predictions[0]['boxes']
+        targets_boxes = targets[0]['boxes']
 
-        # ap = get_AP(scores, boxes, targets_boxes)
-        # self.log('test_AP', ap, prog_bar=True)
-        pass
+        ap = get_AP(scores, boxes, targets_boxes)
+        self.log('test_AP', ap, prog_bar=True)
  
 
     def configure_optimizers(self) -> Dict[str, Any]:
@@ -226,7 +227,3 @@ class FasterRCNNLightning(pl.LightningModule):
                 },
             }
         return {"optimizer": optimizer}
-        # optimizer = SGD(self.parameters(), lr=self.hparams.learning_rate,
-        #                 momentum=self.hparams.momentum, weight_decay=self.hparams.weight_decay)
-        # scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
-        # return [optimizer], [scheduler]

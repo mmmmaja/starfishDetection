@@ -3,5 +3,5 @@ defaults:
   - data: default_data_module
   - trainer: default_trainer
   # - callbacks: default_callbacks
-  # - logger: wandb_logger
+  - logger: wandb_logger
   - _self_
