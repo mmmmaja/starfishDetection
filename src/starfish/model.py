@@ -4,67 +4,93 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import StepLR
 import torch
+from torchmetrics.classification import BinaryAveragePrecision
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+def compute_are_under_curve(precision, recall, verbose=False):
+    if verbose:
+        plt.plot(recall, precision, marker='.', label='Precision-Recall Curve')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall Curve')
+
+        # Set the limits
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+
+        plt.show()
+
+    # at each recall level, we replace each precision value with the maximum precision value to the right of that recall level
+    for i in range(len(precision) - 2, -1, -1):
+        precision[i] = max(precision[i], precision[i + 1])
+
+    # Compute the area under the curve
+    area = 0
+    for i in range(len(recall) - 1):
+        area += (recall[i + 1] - recall[i]) * precision[i + 1]
+    return area
 
 
 def get_AP(scores, pred_boxes, gt_boxes, iou_threshold=0.5):
     """
-    TODO: test this function
-    Since we have just one class AP is a sufficinet metric, we do need to average over classes
-    :param scores: Tensor of shape (N,) containing the confidence scores
-    :param pred_boxes: Tensor of shape (N, 4) containing the predicted boxes
-    :param gt_boxes: Tensor of shape (M, 4) containing the ground truth boxes
+    Compute Average Precision (AP) for a single class.
+    
+    :param scores:      Tensor of shape (N,) containing the confidence scores
+    :param pred_boxes:  Tensor of shape (N, 4) containing the predicted boxes
+    :param gt_boxes:    Tensor of shape (M, 4) containing the ground truth boxes
     :param iou_threshold: IoU threshold to consider a prediction as correct
+    
+    :return: AP (float)
     """
 
-    # 1. Create a list to store the confidence scores and IoU values for each prediction
-    confidence_scores = []
-    ious = []
-    for i, pred_box in enumerate(pred_boxes):
-        # Get the confidence score
-        confidence_scores.append(scores[i])
-        
-        # Calculate the IoU with all ground truth boxes
-        pred_box = pred_box.unsqueeze(0)
-        iou_values = torchvision.ops.box_iou(pred_box, gt_boxes)
-        ious.append(iou_values.max().item())
+    # Sort predictions by confidence desc
+    sorted_indices = torch.argsort(scores, descending=True)
+    # Sort predictions by confidence in descending order
+    pred_boxes = pred_boxes[sorted_indices]
 
-    # 2. Sort the confidence scores in descending order
-    sorted_indices = torch.argsort(torch.tensor(confidence_scores), descending=True)
-
-    # 3. Calculate the precision and recall at each confidence score threshold
-    true_positives, false_positives = 0, 0
-    precisions, recalls = [], []
-
-    for i in sorted_indices:
-
-        # Check if predicted box matches any ground truth box
-        if ious[i] > iou_threshold:
-            true_positives += 1
-        else:
-            false_positives += 1
-        # Calculate precision and recall
-        precisions.append(
-            true_positives / (true_positives + false_positives)
-        )
-        recalls.append(
-            true_positives / len(gt_boxes)
-        )
+    # Create the dataframe to track the metrics
+    df = pd.DataFrame(columns=['rank', 'correct', 'precision', 'recall'])
     
-    # Choose the max precision at each recall value and discard the rest
-    max_precisions = []
-    for recall in recalls:
-        max_precisions.append(max([precision for i, precision in enumerate(precisions) if recalls[i] >= recall]))
+    # For each prediction determine if it matches an unused GT
+    used = torch.zeros(len(gt_boxes), dtype=torch.bool)  # track which GT boxes are used
+    
+    true_positives, false_positives = [], []
+    
+    for i, pred_box in enumerate(pred_boxes):
+        # Compute IoU with all GT boxes
+        ious = torchvision.ops.box_iou(pred_box.unsqueeze(0), gt_boxes)  # shape (1, M)
+        iou_vals = ious[0]
+        
+        # Find the best GT match (highest IoU) above the threshold
+        best_iou_val, best_gt_idx = torch.max(iou_vals, dim=0)
+        
+        if best_iou_val >= iou_threshold and not used[best_gt_idx]:
+            # This is a true positive and we mark that GT box as used
+            true_positives.append(1)
+            false_positives.append(0)
+            used[best_gt_idx] = True
+            correct = True
+        else:
+            # Otherwise, it's a false positive
+            true_positives.append(0)
+            false_positives.append(1)
+            correct = False
 
-    # Calculate the area under the precision-recall curve
-    ap = 0
-    for i in range(1, len(recalls)):
-        ap += (recalls[i] - recalls[i - 1]) * max_precisions[i]
-    return ap
+        precision = torch.sum(torch.tensor(true_positives, dtype=torch.float)) / (i + 1)
+        recall = torch.sum(torch.tensor(true_positives, dtype=torch.float)) / len(gt_boxes)
+        df.loc[i] = [i, correct, precision, recall]
+    
+    # Plot the precision-recall curve
+    precision = df['precision'].to_numpy()
+    recall = df['recall'].to_numpy()
+
+    return compute_are_under_curve(precision, recall)
 
 
 def NMS(scores, boxes, iou_threshold=0.5):
     """
-    TODO: fix this function
     Non-Maximum Suppression
     :param scores: Tensor of shape (N,) containing the confidence scores
     :param boxes: Tensor of shape (N, 4) containing the predicted boxes
