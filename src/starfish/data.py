@@ -37,7 +37,6 @@ def format_annotations(annotation_dict, image_width, image_height):
 
 
 class StarfishDataset(Dataset):
-
     def __init__(self, data_path: Path, transforms=None, subset=1.0) -> None:
         """
         Initialize the dataset.
