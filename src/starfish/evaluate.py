@@ -18,14 +18,10 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-
-
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
-
 
 def evaluate(model_checkpoint: str) -> None:
     """Evaluate a trained model."""
-    print("Evaluating like my life depended on it")
     print(model_checkpoint)
 
     model = FasterRCNNLightning().to(DEVICE)
@@ -42,7 +38,6 @@ def evaluate(model_checkpoint: str) -> None:
         correct += (y_pred.argmax(dim=1) == target).float().sum().item()
         total += target.size(0)
     print(f"Test accuracy: {correct / total}")
-
 
 if __name__ == "__main__":
     typer.run(evaluate)
