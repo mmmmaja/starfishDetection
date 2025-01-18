@@ -181,3 +181,4 @@ Starfish Detection
 lightning_logs/
 wandb
 outputs
+src/starfish/profiling/log
