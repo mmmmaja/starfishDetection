@@ -10,6 +10,6 @@ def test_data():
 
     train, validation, test = create_dataset()
     assert image.shape == (1, 640, 640)
-    assert len(train) == 1
-    assert len(validation) == 1
-    assert len(test) == 1
+    assert len(train) == 1, "Dataset did not have the correct number of samples"
+    assert len(validation) == 1, "Dataset did not have the correct number of samples"
+    assert len(test) == 1, "Dataset did not have the correct number of samples"
