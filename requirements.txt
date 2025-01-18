@@ -13,3 +13,4 @@ matplotlib
 dvc-gs
 dvc
 wandb
+torchmetrics[detection]
