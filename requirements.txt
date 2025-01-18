@@ -14,3 +14,4 @@ dvc-gs
 dvc
 wandb
 torchmetrics[detection]
+coverage
