@@ -25,7 +25,7 @@ targets = [target]
 model = FasterRCNNLightning(num_classes=2)
 model.eval()
 
-with profile(activities=[ProfilerActivity.CPU], on_trace_ready=tensorboard_trace_handler("src/starfish/profiling/log")) as prof:
+with profile(activities=[ProfilerActivity.CPU], on_trace_ready=tensorboard_trace_handler("profiling")) as prof:
     for i in range(10):
         model(inputs)
         prof.step()
