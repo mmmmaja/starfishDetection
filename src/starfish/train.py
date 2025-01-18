@@ -1,16 +1,6 @@
-from model import FasterRCNNLightning
-from data import create_dataset
-from visualize import visualize_dataset
-from pytorch_lightning import Trainer
-from torch.utils.data import DataLoader
-import torch
-from pytorch_lightning.callbacks import EarlyStopping
-from pytorch_lightning.loggers import TensorBoardLogger
-from pathlib import Path
-import pytorch_lightning
 import hydra
 from omegaconf import DictConfig
-from hydra.utils import to_absolute_path, instantiate
+from hydra.utils import instantiate
 
 @hydra.main(config_path="../../configs", config_name="main_config", version_base="1.2")
 def train(cfg: DictConfig):
@@ -19,11 +9,10 @@ def train(cfg: DictConfig):
 
     # 2. Instantiate the model
     model = instantiate(cfg.model)
-
     logger = instantiate(cfg.logger)
 
     # 3. Instantiate the trainer
-    trainer = instantiate(cfg.trainer ,logger = logger)#callbacks=[early_stopping], logger=True)
+    trainer = instantiate(cfg.trainer, logger=logger)#callbacks=[early_stopping], logger=True)
 
     # 4. Train the model
     trainer.fit(model, data_module)

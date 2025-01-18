@@ -12,7 +12,6 @@ import numpy as np
 from typing import Optional, Tuple
 import pytorch_lightning as pl
 
-
 def format_annotations(annotation_dict, image_width, image_height):
     """
     Format the annotations to [x_min, y_min, x_max, y_max] in absolute pixel coordinates for the fasterrcnn model.
@@ -28,14 +27,13 @@ def format_annotations(annotation_dict, image_width, image_height):
     x_max = x_min + annotation_dict['width']
     y_max = y_min + annotation_dict['height']
 
-    # Make sure that the coordinates are within image boundaries
+    # Ensures that the coordinates are within image boundaries
     x_min = max(0, x_min)
     y_min = max(0, y_min)
     x_max = min(image_width, x_max)
     y_max = min(image_height, y_max)
 
-    # Class 1 denotes the starfish
-    return [x_min, y_min, x_max, y_max, 1]
+    return [x_min, y_min, x_max, y_max, 1] # class 1 denotes the starfish
 
 def custom_collate_fn(batch):
     images = [sample[0] for sample in batch]  # List of tensors
@@ -166,15 +164,15 @@ class StarfishDataset(Dataset):
             plt.show()
 
 
-def preprocess(raw_data_path: Path, output_folder: Path) -> None:
-    """
-    Preprocess the raw data and save it to the output folder.
-    :param raw_data_path: The path to the raw data
-    :param output_folder: The path to the output folder
-    """
-    print(f"Preprocessing data from {raw_data_path}...")
-    # From what I understand now we do need to do that
-    pass
+# def preprocess(raw_data_path: Path, output_folder: Path) -> None:
+#     """
+#     Preprocess the raw data and save it to the output folder.
+#     :param raw_data_path: The path to the raw data
+#     :param output_folder: The path to the output folder
+#     """
+#     print(f"Preprocessing data from {raw_data_path}...")
+#     # From what I understand now we do need to do that
+#     pass
 
 
 def create_dataset(data_path, subset=1.0):
@@ -236,23 +234,21 @@ class StarfishDataModule(pl.LightningDataModule):
         """Load and prepare datasets."""
 
         if not self.data_train and not self.data_val and not self.data_test:
-            dataset = StarfishDataset(Path(self.data_path), transforms = self.transforms, subset=self.subset)
-            self.data_train, self.data_val, self.data_test = random_split(
+            dataset = StarfishDataset(Path(self.data_path), transforms=self.transforms, subset=self.subset)
+            self.data_train, self.data_val, self.data_test=random_split(
                 dataset=dataset,
                 lengths=self.train_val_test_split,
                 generator=torch.Generator().manual_seed(42),
             )
     
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_train, batch_size=self.batch_size, num_workers = self.num_workers, collate_fn = custom_collate_fn, shuffle=True)
+        return DataLoader(self.data_train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=True)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_val, batch_size=self.batch_size, num_workers = self.num_workers, collate_fn = custom_collate_fn, shuffle=False)
+        return DataLoader(self.data_val, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=False)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_test, batch_size=self.batch_size, num_workers = self.num_workers, collate_fn = custom_collate_fn, shuffle=False)
-
-
+        return DataLoader(self.data_test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=False)
 
 if __name__ == "__main__":
     # Get the main directory of the project
