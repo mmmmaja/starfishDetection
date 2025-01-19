@@ -5,5 +5,5 @@ from starfish.data import MyDataset
 
 def test_my_dataset():
     """Test the MyDataset class."""
-    dataset = MyDataset("data/raw")
+    dataset = MyDataset("starfish-detection-data/data/raw")
     assert isinstance(dataset, Dataset)

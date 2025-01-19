@@ -1,0 +1,9 @@
+workerPoolSpecs:
+    machineSpec:
+        machineType: n1-highmem-2
+    replicaCount: 1
+    containerSpec:
+        imageUri: <region>-docker.pkg.dev/<project-id>/<registry-name>/<image-name>:<image-tag>
+        env:
+        - name: WANDB_API_KEY
+          value: <your-wandb-api-key>
