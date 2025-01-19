@@ -11,6 +11,7 @@ import numpy as np
 from typing import Optional, Tuple
 import pytorch_lightning as pl
 
+
 def format_annotations(annotation_dict, image_width, image_height):
     """
     Format the annotations to [x_min, y_min, x_max, y_max] in absolute pixel coordinates for the fasterrcnn model.
@@ -32,7 +33,7 @@ def format_annotations(annotation_dict, image_width, image_height):
     x_max = min(image_width, x_max)
     y_max = min(image_height, y_max)
 
-    return [x_min, y_min, x_max, y_max, 1] # class 1 denotes the starfish
+    return [x_min, y_min, x_max, y_max, 1]  # class 1 denotes the starfish
 
 
 def custom_collate_fn(batch):
@@ -225,20 +226,39 @@ class StarfishDataModule(pl.LightningDataModule):
 
         if not self.data_train and not self.data_val and not self.data_test:
             dataset = StarfishDataset(Path(self.data_path), transforms=self.transforms, subset=self.subset)
-            self.data_train, self.data_val, self.data_test=random_split(
+            self.data_train, self.data_val, self.data_test = random_split(
                 dataset=dataset,
                 lengths=self.train_val_test_split,
                 generator=torch.Generator().manual_seed(42),
             )
 
     def train_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=True)
+        return DataLoader(
+            self.data_train,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            collate_fn=custom_collate_fn,
+            shuffle=True,
+        )
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_val, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=False)
+        return DataLoader(
+            self.data_val,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            collate_fn=custom_collate_fn,
+            shuffle=False,
+        )
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(self.data_test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=custom_collate_fn, shuffle=False)
+        return DataLoader(
+            self.data_test,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            collate_fn=custom_collate_fn,
+            shuffle=False,
+        )
+
 
 if __name__ == "__main__":
     # Get the main directory of the project
