@@ -17,7 +17,7 @@ steps:
   args:
     - '-c'
     - |
-    cat configs/vertex_ai_config.yaml
+      cat configs/vertex_ai_config.yaml
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'Train on vertex AI'
