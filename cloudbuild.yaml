@@ -16,4 +16,6 @@ steps:
     'us-central1-docker.pkg.dev/starfish-detection/registry/train'
   ]
 options:
+  env:
+    - DOCKER_BUILDKIT=1
   logging: CLOUD_LOGGING_ONLY
