@@ -1,17 +1,12 @@
 import torch
-from fastapi import FastAPI, HTTPException, File, UploadFile
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
-from fastapi.responses import StreamingResponse
-import io
-from http import HTTPStatus
-import numpy as np
 import cv2
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 import sys
 from pathlib import Path
-import matplotlib.pyplot as plt
 
 # Inser the path to the main directory (1 level up)
 parent_directory = Path(__file__).resolve().parents[1]
@@ -23,11 +18,13 @@ from src.starfish.model import NMS, FasterRCNNLightning
 Create a FastAPI application that can do inference using the model (M22)
 """
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Hello!")
     yield
     print("Goodbye!")
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -52,21 +49,17 @@ def preprocess_image(image):
     image = image / 255.0
     # Make it of a type double
     image = image.astype("float32")
-    transform = A.Compose([
-            A.Resize(640, 640),
-            A.HorizontalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.2),
-            ToTensorV2()
-        ], 
+    transform = A.Compose(
+        [A.Resize(640, 640), A.HorizontalFlip(p=0.5), A.RandomBrightnessContrast(p=0.2), ToTensorV2()],
     )
     return transform(image=image)["image"]
 
 
 @app.post("/inference/")
-# async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
+# async def: Defines an asynchronous function, allowing FastAPI to handle other requests
 # while waiting for I/O operations (like reading a file) to complete.
 async def inference(data: UploadFile = File(...)):
-    with open('image.jpg', 'wb') as image:
+    with open("image.jpg", "wb") as image:
         content = await data.read()
         image.write(content)
         image.close()
@@ -84,9 +77,9 @@ async def inference(data: UploadFile = File(...)):
         model.eval()
         # Prediction is the bounding boxes and the scores
         prediction = model(batch.to(device))
-    
-    scores = prediction[0]['scores']
-    boxes = prediction[0]['boxes']
+
+    scores = prediction[0]["scores"]
+    boxes = prediction[0]["boxes"]
 
     keep_scores, keep_boxes = NMS(scores, boxes)
 
@@ -97,7 +90,7 @@ async def inference(data: UploadFile = File(...)):
         x2, y2 = x1 + w, y1 + h
         # Add the bounding box to the image
         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 255, 0), thickness=2)
-        
+
         # Add the confidence score to the bounding box
         score = keep_scores[i]
         # TODO: Change the font size and thickness
@@ -105,5 +98,3 @@ async def inference(data: UploadFile = File(...)):
     cv2.imwrite("output.jpg", image)
 
     return FileResponse("output.jpg")
-
-

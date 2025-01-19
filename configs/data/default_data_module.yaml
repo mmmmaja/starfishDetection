@@ -1,7 +1,7 @@
 _target_: starfish.data.StarfishDataModule
 data_path: starfish-detection-data/data/raw
 batch_size: 4
-train_val_test_split: 
+train_val_test_split:
   - 0.8
   - 0.1
   - 0.1

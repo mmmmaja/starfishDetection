@@ -10,10 +10,12 @@ model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path, num_classes=2)
 model.eval()  # Set the model to evaluation mode
 model.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
+
 @app.get("/")
 def read_root():
     """Root endpoint."""
     return {"message": "Welcome to the starfish detection model inference API!"}
+
 
 @app.post("/predict/")
 def predict(image: UploadFile):
