@@ -3,7 +3,7 @@ workerPoolSpecs:
         machineType: n1-highmem-2
     replicaCount: 1
     containerSpec:
-        imageUri: <region>-docker.pkg.dev/<project-id>/<registry-name>/<image-name>:<image-tag>
+        imageUri: us-central1-docker.pkg.dev/starfish-detection/registry/train
         env:
         - name: WANDB_API_KEY
-          value: <your-wandb-api-key>
+          value: $WANDB_API_KEY
