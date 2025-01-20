@@ -50,6 +50,10 @@ def data(ctx: Context) -> None:
     ctx.run(f"python src/{PROJECT_NAME}/data.py data/raw data/processed", echo=True, pty=not WINDOWS)
 
 @task
+def profile_forward_pass(ctx):
+    ctx.run("python src/starfish/profile_forward_pass.py", echo=True)
+
+@task
 def build_train_image(ctx):
     ctx.run("docker build -f dockerfiles/train.dockerfile . -t train:latest", echo=True, pty=not WINDOWS)
 
