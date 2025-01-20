@@ -71,33 +71,29 @@ The directory structure of the project looks like this:
 ### Environment
 Create a dedicated environment to keep track of the packages for the project
 ```bash
-conda create --name starfish-env python3.11
-conda activate starfish-env
-pip install -r requirements.txt
-pip install -r requirements_dev.txt
-pip install -e .
+invoke conda
 ```
 
 ### Data
 Download the data for the project from our Google Cloud Bucket
 ```bash
-gsutil -m cp -r gs://starfish-detection-data .
+invoke download-data
 ```
 
 ### Docker
 Build the training dockerfile into a Docker image
 ```bash
-docker build -f dockerfiles/train.dockerfile . -t train:latest
+invoke build-train-image
 ```
-Run a container spawned from a docker image
+Run a container spawned from the docker image
 ```bash
-docker run --rm --name RUN_NAME IMAGE_NAME:latest
+invoke run-train-image
 ```
 
 ### Vertex AI
 Train a model using a Docker image through the Vertex AI service
 ```bash
-gcloud builds submit --config=vertex_ai_train.yaml
+invoke train-vertex
 ```
 
 ### Wandb
@@ -107,11 +103,9 @@ wandb login
 ```
 Hyperparameter sweep
 ```bash
-wandb sweep configs/sweep_config.yaml
+invoke sweep
 wandb agent ENTITY/PROJECT_NAME/AGENT_ID
 ```
-
-
 
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
