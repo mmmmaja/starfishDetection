@@ -197,7 +197,7 @@ class StarfishDataModule(pl.LightningDataModule):
         data_from_bucket: bool = True,
         batch_size: int = 32,
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.1, 0.1),
-        subset: float = 0.002,
+        subset: float = 1,
         num_workers: int = 1,
     ) -> None:
         super().__init__()
