@@ -3,19 +3,13 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 from fastapi.responses import StreamingResponse
+
+
 import cv2
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 import sys
-from pathlib import Path
-
-
-# Insert the path to the main directory (1 level up)
-parent_directory = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(parent_directory))
-
-
-from src.starfish.model import NMS, FasterRCNNLightning
+from model import NMS, FasterRCNNLightning
 
 """
 Create a FastAPI application that can do inference using the model (M22)
@@ -36,7 +30,7 @@ app = FastAPI(lifespan=lifespan)
 
 # Load the model
 # TODO: Change the path to the model once it is final
-model_path = parent_directory / "lightning_logs" / "version_0" / "checkpoints" / "epoch=0-step=1.ckpt"
+model_path = "epoch=0-step=1.ckpt"
 
 # Load the pytorch lightning model
 try:
@@ -94,6 +88,8 @@ async def inference(data: UploadFile = File(...)):
         model.eval()
         # Prediction is the bounding boxes and the scores
         prediction = model(batch.to(device))
+
+    # TODO: return just the JSON response
     
     # Extract the scores and boxes from the prediction
     scores = prediction[0]['scores']
