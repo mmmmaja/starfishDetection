@@ -1,0 +1,11 @@
+# starfish_data.yaml
+
+train: ../data/processed/images/train
+val: ../data/processed/images/val
+test: ../data/processed/images/test
+
+# number of classes
+nc: 1
+
+# class names
+names: ['starfish']
