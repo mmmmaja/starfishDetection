@@ -258,7 +258,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the dvc pull command did not work for us, so we used gsutil -m cp -r gs://starfish-detection-data . instead.
+Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the dvc pull command did not work for us, so we used gsutil -m cp -r gs://starfish-detection-data . instead. It would be beneficial to have version control of the data in a case where new data is collected over time and we want to be able to retrain the model as the new data comes in. This is especially important if there is a data distributin shift, in which case training on the updated data is crucial to continued model performance. Nonetheless, we may also want to be able to analyze the distribution of the data at different points, so having access to previous versions would be important.
 
 ### Question 11
 
