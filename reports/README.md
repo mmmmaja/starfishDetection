@@ -83,7 +83,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Add a continues workflow that triggers when changes to the model registry is made (M19)
 * [X] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
 * [ ] Create a trigger workflow for automatically building your docker images (M21)
-* [ ] Get your model training in GCP using either the Engine or Vertex AI (M21)
+* [X] Get your model training in GCP using either the Engine or Vertex AI (M21)
 * [ ] Create a FastAPI application that can do inference using your model (M22)
 * [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
 * [ ] Write API tests for your application and setup continues integration for these (M24)
@@ -258,7 +258,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
---- question 10 fill here ---
+Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the dvc pull command did not work for us, so we used gsutil -m cp -r gs://starfish-detection-data . instead.
 
 ### Question 11
 
@@ -374,6 +374,9 @@ will check the repositories and the code to verify your answers.
 > Answer:
 
 --- question 17 fill here ---
+Bucket is used to store 
+Vertex AI
+Secret
 
 ### Question 18
 
