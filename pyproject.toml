@@ -19,6 +19,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dynamic = ["dependencies", "optional-dependencies"]
 
+[project.scripts]
+train = "starfish.train:train"
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
