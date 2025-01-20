@@ -5,3 +5,5 @@ defaults:
   # - callbacks: default_callbacks
   - logger: wandb_logger
   - _self_
+
+profiling: false
