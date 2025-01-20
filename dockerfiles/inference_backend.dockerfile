@@ -20,11 +20,11 @@ COPY pyproject.toml pyproject.toml
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_api.txt
 
 # Set environment variable for PORT with a default value
-ENV PORT=8000
+ENV PORT=8080
 
 EXPOSE $PORT
 # Start the application using Gunicorn with Uvicorn workers
-CMD ["gunicorn", "inference_backend:app", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
+CMD ["gunicorn", "inference_backend:app", "--bind", "0.0.0.0:8080", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
 
 
 
@@ -38,24 +38,31 @@ CMD ["gunicorn", "inference_backend:app", "--bind", "0.0.0.0:8000", "--workers",
 
 # 4. Deploy the the cloud:
     
-    # docker tag \
-    # backend:latest \
-    # <region>-docker.pkg.dev/<project>/frontend-backend/backend:latest
-    # docker push \
-    # <region>.pkg.dev/<project>/frontend-backend/backend:latest
-    # gcloud run deploy backend \
-    # --image=<region>-docker.pkg.dev/<project>/frontend-backend/backend:latest \
-    # --region=europe-west1 \
-    # --platform=managed \
+    # docker tag backend:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
+    # docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
+
+    # Verify the images in the artifact registry
+    # gcloud artifacts docker images list us-central1-docker.pkg.dev/starfish-detection/frontend-backend
+
+
+    # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated
+
 
 
 # docker tag \
 #     backend:latest \
 #     us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
 # docker push \
-#     us-central1.pkg.dev/starfish-detection/frontend-backend/backend:latest
-# gcloud run deploy backend \
-#     --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest \
-#     --region=us-central1 \
-#     --platform=managed \
+# #     us-central1.pkg.dev/starfish-detection/frontend-backend/backend:latest
+# gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed
 
+# gcloud artifacts repositories create frontend-backend --repository-format=docker --location=us-central1 --description="Docker repository for frontend and backend services"
+
+# export MYENDPOINT=$(gcloud run services describe backend --region=us-central1 --format="value(status.url)")
+# curl -X 'POST' \
+#     $MYENDPOINT/inference \
+#     -H 'accept: application/json' \
+#     -H 'Content-Type: multipart/form-data' \
+#     -F 'file=@C:\\Users\\mjgoj\\Desktop\\starfishDetection\\data\\raw\\train_images\\video_0\0.jpg;type=image/jpeg'
+
+    
