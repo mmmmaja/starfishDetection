@@ -11,9 +11,9 @@ class FasterRCNNLightning(pl.LightningModule):
     def __init__(
         self,
         num_classes: int,
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler,
-        compile: bool,
+        optimizer: torch.optim.Optimizer = torch.optim.Adam,
+        scheduler: torch.optim.lr_scheduler = torch.optim.lr_scheduler.StepLR,
+        compile: bool = False,
         log_ap: bool = False,
     ):
         super().__init__()
