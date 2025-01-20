@@ -194,14 +194,14 @@ def create_dataset(data_path, subset=1.0):
 class StarfishDataModule(pl.LightningDataModule):
     def __init__(
         self,
-        data_path: str,
+        data_from_bucket: bool = True,
         batch_size: int = 32,
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.1, 0.1),
         subset: float = 0.002,
-        num_workers: int = 8,
+        num_workers: int = 1,
     ) -> None:
         super().__init__()
-        self.data_path = data_path
+        self.data_path = '/gcs/starfish-detection-data/data/raw' if data_from_bucket else 'starfish-detection-data/data/raw'
         self.batch_size = batch_size
         self.train_val_test_split = train_val_test_split
         self.subset = subset
