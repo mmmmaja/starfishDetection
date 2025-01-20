@@ -3,7 +3,7 @@ from omegaconf import DictConfig
 from hydra.utils import instantiate
 from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity
 from pathlib import Path
-from luguru import logger
+from loguru import logger as log
 import torch
 import numpy as np
 import random
@@ -23,8 +23,8 @@ config_path = str(Path(__file__).resolve().parent.parent.parent / "configs")
 @hydra.main(config_path=config_path, config_name="main_config", version_base="1.2")
 def train(cfg: DictConfig):
     profiling = cfg.profiling
+    log.info(f'Profiling = {profiling}')
 
-    logger.info(profiling)
     if profiling:
         prof = profile(activities=[ProfilerActivity.CPU], on_trace_ready=tensorboard_trace_handler("profiling"))
         prof.start()
@@ -40,7 +40,7 @@ def train(cfg: DictConfig):
     trainer = instantiate(cfg.trainer, logger=logger)  # callbacks=[early_stopping], logger=True)
 
     # 4. Train the model
-    logger.info("\nTraining the model...")
+    log.info("\nTraining the model...")
     trainer.fit(model, data_module)
 
     if profiling:
@@ -48,7 +48,7 @@ def train(cfg: DictConfig):
         print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=30))
 
     # 5. Test the model
-    logger.info("\nTesting the model...")
+    log.info("\nTesting the model...")
     trainer.test(model, data_module)
 
 if __name__ == "__main__":
