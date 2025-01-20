@@ -80,6 +80,22 @@ Download the data for the project from our Google Cloud Bucket
 invoke download-data
 ```
 
+### Train
+Train
+```bash
+train
+```
+
+### Profiling
+Train with profiling
+```bash
+train profiling=True
+```
+Profile forward pass
+```bash
+invoke profile-forward-pass
+```
+
 ### Docker
 Build the training dockerfile into a Docker image
 ```bash
