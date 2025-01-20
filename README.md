@@ -67,6 +67,16 @@ The directory structure of the project looks like this:
 └── tasks.py                  # Project tasks
 ```
 
+## Documentation
+### Environment
+To create a dedicated environment to keep track of the packages for the project:
+```bash
+conda create --name starfish-env python3.11
+conda activate starfish-env
+pip install -r requirements.txt
+pip install -r requirements_dev.txt
+pip install -e .
+```
 
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
