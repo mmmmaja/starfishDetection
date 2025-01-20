@@ -67,7 +67,7 @@ will check the repositories and the code to verify your answers.
 * [X] Use profiling to optimize your code (M12)
 * [X] Use logging to log important events in your code (M14)
 * [X] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-* [ ] Consider running a hyperparameter optimization sweep (M14)
+* [X] Consider running a hyperparameter optimization sweep (M14)
 * [X] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
@@ -357,6 +357,7 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 > Answer:
 
 --- question 16 fill here ---
+Optimizer.step#Adam.step took the most CPU time in profiling
 
 ## Working in the cloud
 
