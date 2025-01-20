@@ -16,3 +16,4 @@ wandb
 torchmetrics[detection]
 coverage
 invoke
+loguru
