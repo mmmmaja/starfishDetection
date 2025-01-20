@@ -81,9 +81,17 @@ invoke download-data
 ```
 
 ### Train
-Train
+Train with CPU
 ```bash
 train
+```
+Train with data downloaded from the bucket rather than accessing it directly from the cloud
+```bash
+train data.data_from_bucket=false
+```
+Train with GPU
+```bash
+train trainer.accelerator=gpu
 ```
 
 ### Profiling
