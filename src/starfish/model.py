@@ -15,9 +15,6 @@ class FasterRCNNLightning(pl.LightningModule):
         scheduler: torch.optim.lr_scheduler,
         compile: bool,
         log_ap: bool = False,
-        learning_rate: float = 0.005,
-        momentum: float = 0.9,
-        weight_decay: float = 0.0005,
     ):
         super().__init__()
         self.save_hyperparameters()  # saves the hyperparameters to the checkpoint
@@ -118,6 +115,8 @@ class FasterRCNNLightning(pl.LightningModule):
         Configure the optimizer and learning rate scheduler
         """
         optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())  # initializes the optimizer
+        print('learning rate', optimizer.param_groups[0]["lr"])
+        print('weight decay', optimizer.param_groups[0]["weight_decay"])
 
         if self.hparams.scheduler is not None:
             scheduler = self.hparams.scheduler(optimizer=optimizer)  # initializes the scheduler

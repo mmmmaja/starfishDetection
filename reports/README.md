@@ -109,7 +109,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Revisit your initial project description. Did the project turn out as you wanted?
 * [ ] Create an architectural diagram over your MLOps pipeline
 * [ ] Make sure all group members have an understanding about all parts of the project
-* [ ] Uploaded all your code to GitHub
+* [X] Uploaded all your code to GitHub
 
 ## Group information
 
