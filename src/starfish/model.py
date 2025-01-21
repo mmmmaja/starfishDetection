@@ -10,8 +10,8 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 class FasterRCNNLightning(pl.LightningModule):
     def __init__(
         self,
-        num_classes: int,
-        optimizer: torch.optim.Optimizer = torch.optim.Adam,
+        num_classes: int = 2,
+        optimizer: torch.optim.Optimizer = torch.optim.SGD,
         scheduler: torch.optim.lr_scheduler = torch.optim.lr_scheduler.StepLR,
         compile: bool = False,
         log_ap: bool = False,
@@ -22,9 +22,7 @@ class FasterRCNNLightning(pl.LightningModule):
 
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features  # gets the number of input features
 
-        self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(
-            in_features, num_classes
-        )  # replaces the pre-trained head with a new one
+        self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)  # replaces the pre-trained head with a new one
         self.log_ap = log_ap
         self.train_map_metric = MeanAveragePrecision()
         self.train_iou_metric = IntersectionOverUnion()
@@ -34,13 +32,6 @@ class FasterRCNNLightning(pl.LightningModule):
         self.test_iou_metric = IntersectionOverUnion()
 
         torch.set_float32_matmul_precision("high")  # sets the precision to high
-
-    def forward(self, images, targets=None):
-        """
-        Forward pass of the model
-        :param images: Tensor of shape (N, C, H, W)
-        """
-        return self.model(images, targets)
 
     def training_step(self, batch, batch_idx):
         """
@@ -61,13 +52,9 @@ class FasterRCNNLightning(pl.LightningModule):
                 predictions = self.model(images)  # forward pass without targets
 
             self.train_map_metric.update(predictions, targets)  # updates the mAP metric
-            self.log_dict(
-                {f"train_{k}": v for k, v in self.train_map_metric.compute().items()}, prog_bar=True
-            )  # logs the mAP
+            self.log_dict({f"train_{k}": v for k, v in self.train_map_metric.compute().items()}, prog_bar=True)  # logs the mAP
             self.train_iou_metric.update(predictions, targets)  # updates the IoU metric
-            self.log_dict(
-                {f"train_{k}": v for k, v in self.train_iou_metric.compute().items()}, prog_bar=True
-            )  # logs the IoU
+            self.log_dict({f"train_{k}": v for k, v in self.train_iou_metric.compute().items()}, prog_bar=True)  # logs the IoU
             self.model.train()  # switches back to training mode
 
         return total_loss
@@ -102,13 +89,9 @@ class FasterRCNNLightning(pl.LightningModule):
         images, targets = batch  # unpacks the batch
         predictions = self.model(images)  # forward pass without targets
         self.test_map_metric.update(predictions, targets)  # updates the mAP metric
-        self.log_dict(
-            {f"test_{k}": v for k, v in self.test_map_metric.compute().items()}, prog_bar=True
-        )  # logs the mAP
+        self.log_dict({f"test_{k}": v for k, v in self.test_map_metric.compute().items()}, prog_bar=True)  # logs the mAP
         self.test_iou_metric.update(predictions, targets)  # updates the IoU metric
-        self.log_dict(
-            {f"test_{k}": v for k, v in self.test_iou_metric.compute().items()}, prog_bar=True
-        )  # logs the IoU
+        self.log_dict({f"test_{k}": v for k, v in self.test_iou_metric.compute().items()}, prog_bar=True)  # logs the IoU
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """
