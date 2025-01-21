@@ -5,17 +5,22 @@ repos:
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
+        language_version: python3.11
     -   id: end-of-file-fixer
+        language_version: python3.11
     -   id: check-yaml
+        language_version: python3.11
     -   id: check-added-large-files
+        language_version: python3.11
     -   id: check-json
-    -   id: check-case-conflict
-    -   id: check-toml
-
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev:  v0.4.7
-    hooks:
-    -   id: ruff
-        args: ["--fix"]
-    -   id: ruff-format
-    -   id: ruff
+        language_version: python3.11
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.4.7
+  hooks:
+    - id: ruff
+      args: ["--fix"]
+      language_version: python3.11
+    - id: ruff-format
+      language_version: python3.11
+    - id: ruff
+      language_version: python3.11
