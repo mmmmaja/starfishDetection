@@ -2,7 +2,10 @@ from starfish.data import StarfishDataset
 from starfish.data import StarfishDataModule
 from tests import _PATH_DATA
 import random
+import os
+import pytest
 
+@pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_dataset():
     dataset = StarfishDataset(_PATH_DATA)
     assert len(dataset) == 4919, "Dataset did not have the correct number of samples"
@@ -14,6 +17,7 @@ def test_dataset():
     labels = dataset[index][1]["labels"]
     assert all(label in [0, 1] for label in labels), f"Labels are not correct for index {index}"
 
+@pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_datamodule():
     datamodule = StarfishDataModule(data_from_bucket=False)
     datamodule.setup()
