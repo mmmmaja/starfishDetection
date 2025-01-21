@@ -131,6 +131,16 @@ invoke sweep
 wandb agent ENTITY/PROJECT_NAME/AGENT_ID
 ```
 
+### Tests
+Run data tests
+```bash
+invoke test-data
+```
+Run model tests
+```bash
+invoke test-model
+```
+
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
 started with Machine Learning Operations (MLOps).
