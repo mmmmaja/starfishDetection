@@ -1,8 +1,9 @@
 import pytest
 import torch
-from torch import Tensor
+import os
 from starfish.model import FasterRCNNLightning
 from starfish.data import StarfishDataModule
+from tests import _PATH_DATA
 
 @pytest.mark.parametrize("batch_size", [32, 64])
 def test_model(batch_size: int) -> None:
@@ -17,6 +18,7 @@ def test_model(batch_size: int) -> None:
     scores = y['scores']
     assert all(score >= 0 and score <= 1 for score in scores), "Scores are not correct"
 
+@pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_train():
     fasterRCNN = FasterRCNNLightning()
     model = fasterRCNN.model
