@@ -75,7 +75,7 @@ invoke conda
 ```
 
 ### Data
-Download the data for the project from our Google Cloud Bucket
+Download the data for the project from our Google Cloud Bucket, which requires the Google Cloud SDK.
 ```bash
 invoke download-data
 ```
@@ -132,6 +132,10 @@ wandb agent ENTITY/PROJECT_NAME/AGENT_ID
 ```
 
 ### Tests
+Run all tests and calculate coverage
+```bash
+invoke test
+```
 Run data tests
 ```bash
 invoke test-data

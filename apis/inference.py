@@ -7,12 +7,12 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 import sys
 from pathlib import Path
+from src.starfish.model import NMS, FasterRCNNLightning
 
 # Inser the path to the main directory (1 level up)
 parent_directory = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(parent_directory))
 
-from src.starfish.model import NMS, FasterRCNNLightning
 
 """
 Create a FastAPI application that can do inference using the model (M22)
@@ -92,7 +92,7 @@ async def inference(data: UploadFile = File(...)):
         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 255, 0), thickness=2)
 
         # Add the confidence score to the bounding box
-        score = keep_scores[i]
+        # score = keep_scores[i]
         # TODO: Change the font size and thickness
 
     cv2.imwrite("output.jpg", image)
