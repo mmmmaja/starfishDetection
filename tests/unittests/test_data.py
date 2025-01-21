@@ -5,6 +5,7 @@ import random
 import os
 import pytest
 
+
 @pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_dataset():
     dataset = StarfishDataset(_PATH_DATA)
@@ -17,6 +18,7 @@ def test_dataset():
     labels = dataset[index][1]["labels"]
     assert all(label in [0, 1] for label in labels), f"Labels are not correct for index {index}"
 
+
 @pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_datamodule():
     datamodule = StarfishDataModule(data_from_bucket=False)
@@ -28,7 +30,7 @@ def test_datamodule():
     for dataloader in [train_dataloader, val_dataloader, test_dataloader]:
         image, target = next(iter(dataloader))
         assert image[0].shape == (3, 640, 640), "Image shape is not correct"
-        boxes = target[0]['boxes']
-        assert boxes.shape[1] == 4, f"Boxes shape is not correct"
+        boxes = target[0]["boxes"]
+        assert boxes.shape[1] == 4, "Boxes shape is not correct"
         labels = target[0]["labels"]
-        assert all(label in [0, 1] for label in labels), f"Labels are not correct"
+        assert all(label in [0, 1] for label in labels), "Labels are not correct"

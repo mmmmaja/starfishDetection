@@ -375,7 +375,7 @@ Optimizer.step#Adam.step took the most CPU time in profiling
 > Answer:
 
 --- question 17 fill here ---
-Bucket is used to store 
+Bucket is used to store
 Vertex AI
 Secret
 

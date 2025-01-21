@@ -17,7 +17,7 @@ We will integrate the [Albumentations](https://albumentations.ai) framework, an 
 
 **Model**
 
-We plan to use one of the YOLO (You Only Look Once) models, which have been state-of-the-art in diverse object detection tasks. We expect to use [YOLO11](https://docs.ultralytics.com/models/yolo11/#citations-and-acknowledgements), the newest model in the series. The model is made up of a backbone, a neck, and a head. The backbone uses convolutional neural networks to perform feature extraction on the images. The neck then enhances the feature representations at different scales. Finally, the head generates predictions while considering the multiple scales in the feature maps. 
+We plan to use one of the YOLO (You Only Look Once) models, which have been state-of-the-art in diverse object detection tasks. We expect to use [YOLO11](https://docs.ultralytics.com/models/yolo11/#citations-and-acknowledgements), the newest model in the series. The model is made up of a backbone, a neck, and a head. The backbone uses convolutional neural networks to perform feature extraction on the images. The neck then enhances the feature representations at different scales. Finally, the head generates predictions while considering the multiple scales in the feature maps.
 
 
 ## Project structure
