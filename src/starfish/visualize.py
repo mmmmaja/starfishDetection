@@ -1,6 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 
+
 def visualize_dataset(dataset, num_images=4):
     # Create a grid of images
     rows = int(math.sqrt(num_images))
@@ -14,7 +15,3 @@ def visualize_dataset(dataset, num_images=4):
             break
 
     plt.show()
-
-
-
-

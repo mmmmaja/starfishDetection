@@ -181,4 +181,3 @@ lightning_logs/
 wandb
 outputs
 models
-profiling
