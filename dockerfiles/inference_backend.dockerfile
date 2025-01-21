@@ -11,12 +11,15 @@ RUN apt update && \
     libxext6 && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-COPY src/starfish/apis/inference_backend.py inference_backend.py
+
+RUN mkdir -p app
+
+COPY src/starfish/apis/inference_backend.py app/inference_backend.py
 COPY src/starfish/model.py model.py
 COPY requirements_backend_inference.txt requirements_backend_inference.txt
 COPY pyproject.toml pyproject.toml
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_backend_inference.txt.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_backend_inference.txt
 
 # Set environment variable for PORT with a default value
 ENV PORT=8080
@@ -24,7 +27,7 @@ ENV PORT=8080
 
 EXPOSE $PORT
 # Start the application using Gunicorn with Uvicorn workers
-CMD ["gunicorn", "inference_backend:app", "--bind", "0.0.0.0:8080", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
+CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
 
 
 
@@ -54,7 +57,7 @@ CMD ["gunicorn", "inference_backend:app", "--bind", "0.0.0.0:8080", "--workers",
 #     us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
 # docker push \
 # #     us-central1.pkg.dev/starfish-detection/frontend-backend/backend:latest
-# gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed
+# gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --update-secrets=WANDB_API_KEY=wandb-api-key:latest
 
 # gcloud artifacts repositories create frontend-backend --repository-format=docker --location=us-central1 --description="Docker repository for frontend and backend services"
 
@@ -65,4 +68,7 @@ CMD ["gunicorn", "inference_backend:app", "--bind", "0.0.0.0:8080", "--workers",
 #     -H 'Content-Type: multipart/form-data' \
 #     -F 'file=@C:\\Users\\mjgoj\\Desktop\\starfishDetection\\data\\raw\\train_images\\video_0\0.jpg;type=image/jpeg'
 
+
+# Secret to the WandB API key
+# os.environ["WANDB_API_KEY"]
     
