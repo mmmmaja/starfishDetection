@@ -15,15 +15,16 @@ np.random.seed(0)
 random.seed(0)
 
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # sets CuBLAS workspace configuration for deterministic behavior
-torch.backends.cudnn.deterministic = True # ensures that the CUDA backend produces deterministic results
-torch.backends.cudnn.benchmark = False # disables CuDNN benchmarking, which can introduce non-deterministic behavior
+torch.backends.cudnn.deterministic = True  # ensures that the CUDA backend produces deterministic results
+torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can introduce non-deterministic behavior
 
 config_path = str(Path(__file__).resolve().parent.parent.parent / "configs")
+
 
 @hydra.main(config_path=config_path, config_name="main_config", version_base="1.2")
 def train(cfg: DictConfig):
     profiling = cfg.profiling
-    log.info(f'Profiling = {profiling}')
+    log.info(f"Profiling = {profiling}")
 
     if profiling:
         prof = profile(activities=[ProfilerActivity.CPU], on_trace_ready=tensorboard_trace_handler("profiling"))
@@ -50,6 +51,12 @@ def train(cfg: DictConfig):
     # 5. Test the model
     log.info("\nTesting the model...")
     trainer.test(model, data_module)
+
+    # 6. Save the model
+    log.info("\nSaving the model...")
+    state_dict = model.state_dict()
+    torch.save(state_dict, "model.pth")
+
 
 if __name__ == "__main__":
     train()

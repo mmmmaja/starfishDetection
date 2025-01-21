@@ -22,7 +22,9 @@ class FasterRCNNLightning(pl.LightningModule):
 
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features  # gets the number of input features
 
-        self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(in_features, num_classes)  # replaces the pre-trained head with a new one
+        self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(
+            in_features, num_classes
+        )  # replaces the pre-trained head with a new one
         self.log_ap = log_ap
         self.train_map_metric = MeanAveragePrecision()
         self.train_iou_metric = IntersectionOverUnion()
@@ -52,9 +54,13 @@ class FasterRCNNLightning(pl.LightningModule):
                 predictions = self.model(images)  # forward pass without targets
 
             self.train_map_metric.update(predictions, targets)  # updates the mAP metric
-            self.log_dict({f"train_{k}": v for k, v in self.train_map_metric.compute().items()}, prog_bar=True)  # logs the mAP
+            self.log_dict(
+                {f"train_{k}": v for k, v in self.train_map_metric.compute().items()}, prog_bar=True
+            )  # logs the mAP
             self.train_iou_metric.update(predictions, targets)  # updates the IoU metric
-            self.log_dict({f"train_{k}": v for k, v in self.train_iou_metric.compute().items()}, prog_bar=True)  # logs the IoU
+            self.log_dict(
+                {f"train_{k}": v for k, v in self.train_iou_metric.compute().items()}, prog_bar=True
+            )  # logs the IoU
             self.model.train()  # switches back to training mode
 
         return total_loss
@@ -89,17 +95,21 @@ class FasterRCNNLightning(pl.LightningModule):
         images, targets = batch  # unpacks the batch
         predictions = self.model(images)  # forward pass without targets
         self.test_map_metric.update(predictions, targets)  # updates the mAP metric
-        self.log_dict({f"test_{k}": v for k, v in self.test_map_metric.compute().items()}, prog_bar=True)  # logs the mAP
+        self.log_dict(
+            {f"test_{k}": v for k, v in self.test_map_metric.compute().items()}, prog_bar=True
+        )  # logs the mAP
         self.test_iou_metric.update(predictions, targets)  # updates the IoU metric
-        self.log_dict({f"test_{k}": v for k, v in self.test_iou_metric.compute().items()}, prog_bar=True)  # logs the IoU
+        self.log_dict(
+            {f"test_{k}": v for k, v in self.test_iou_metric.compute().items()}, prog_bar=True
+        )  # logs the IoU
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """
         Configure the optimizer and learning rate scheduler
         """
         optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())  # initializes the optimizer
-        print('learning rate', optimizer.param_groups[0]["lr"])
-        print('weight decay', optimizer.param_groups[0]["weight_decay"])
+        print("learning rate", optimizer.param_groups[0]["lr"])
+        print("weight decay", optimizer.param_groups[0]["weight_decay"])
 
         if self.hparams.scheduler is not None:
             scheduler = self.hparams.scheduler(optimizer=optimizer)  # initializes the scheduler

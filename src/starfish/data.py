@@ -112,12 +112,14 @@ class StarfishDataset(Dataset):
         :param index: The index of the sample to return
         """
         image, labels = self.images[index], self.labels[index]
-        image = image / 255.0 # changes the image range from 0-255 to 0-1
-        image = image.astype(np.float32) # converts the image to a float tensor
+        image = image / 255.0  # changes the image range from 0-255 to 0-1
+        image = image.astype(np.float32)  # converts the image to a float tensor
 
         # Apply the transformations
         if self.transforms:
-            transformed = self.transforms(image=image, bboxes=[label[:4] for label in labels], labels=[label[4] for label in labels])
+            transformed = self.transforms(
+                image=image, bboxes=[label[:4] for label in labels], labels=[label[4] for label in labels]
+            )
             image = transformed["image"]
             boxes = transformed["bboxes"]
             labels = transformed["labels"]
@@ -158,6 +160,7 @@ class StarfishDataset(Dataset):
         if plot_show:
             plt.show()
 
+
 def create_dataset(data_path, subset=1.0):
     """
     Create the dataset for training the model.
@@ -185,7 +188,9 @@ class StarfishDataModule(pl.LightningDataModule):
         num_workers: int = 1,
     ) -> None:
         super().__init__()
-        self.data_path = '/gcs/starfish-detection-data/data/raw' if data_from_bucket else 'starfish-detection-data/data/raw'
+        self.data_path = (
+            "/gcs/starfish-detection-data/data/raw" if data_from_bucket else "starfish-detection-data/data/raw"
+        )
         self.batch_size = batch_size
         self.train_val_test_split = train_val_test_split
         self.subset = subset

@@ -1,5 +1,6 @@
 import torch
 from model import FasterRCNNLightning
+
 # starfish is a function that returns the training, validation and test sets
 # from the data.py file
 from data import starfish
@@ -23,6 +24,8 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.ba
 app = typer.Typer()
 
 app.command()
+
+
 def evaluate(model_checkpoint: str) -> None:
     """Evaluate a trained model."""
     print(model_checkpoint)
@@ -31,7 +34,7 @@ def evaluate(model_checkpoint: str) -> None:
     model.load_state_dict(torch.load(model_checkpoint))
 
     _, _, test_set = starfish()
-    test_dataloader = torch.utils.data.DataLoader(test_set, batch_size = 32)
+    test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=32)
 
     model.eval()
     correct, total = 0, 0
@@ -46,6 +49,7 @@ def evaluate(model_checkpoint: str) -> None:
     report = classification_report(test_dataloader, y_pred)
 
     return accuracy, report
+
 
 if __name__ == "__main__":
     app()
