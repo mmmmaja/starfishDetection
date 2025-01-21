@@ -34,7 +34,6 @@ jobs:
           pip install ruff
       - name: Run tests
         run: |
-          invoke download-data
           pytest -v
       - name: Ruff check
         run: ruff check src
