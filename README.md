@@ -115,7 +115,7 @@ invoke run-train-image
 ```
 
 ### Vertex AI
-Train a model using a Docker image through the Vertex AI service
+Get the Docker image built from `train.dockerfile` in the Artifact Registry on Google Cloud, for example by creating a trigger and using the `cloudbuild.yaml` file. Then you can train a model using that Docker image through the Vertex AI service. This also automatically logs the training to Wandb if your API key has been stored as a secret in Google Cloud.
 ```bash
 invoke train-vertex
 ```
