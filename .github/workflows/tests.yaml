@@ -36,6 +36,6 @@ jobs:
         run: |
           pytest -v
       - name: Ruff check
-        run: ruff check .
+        run: ruff check src
       - name: Ruff format
-        run: ruff format .
+        run: ruff format src
