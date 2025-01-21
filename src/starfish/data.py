@@ -112,16 +112,12 @@ class StarfishDataset(Dataset):
         :param index: The index of the sample to return
         """
         image, labels = self.images[index], self.labels[index]
-        # Change the image range from 0-255 to 0-1
-        image = image / 255.0
-        # Convert the image to a float tensor
-        image = image.astype(np.float32)
+        image = image / 255.0 # changes the image range from 0-255 to 0-1
+        image = image.astype(np.float32) # converts the image to a float tensor
 
         # Apply the transformations
         if self.transforms:
-            transformed = self.transforms(
-                image=image, bboxes=[label[:4] for label in labels], labels=[label[4] for label in labels]
-            )
+            transformed = self.transforms(image=image, bboxes=[label[:4] for label in labels], labels=[label[4] for label in labels])
             image = transformed["image"]
             boxes = transformed["bboxes"]
             labels = transformed["labels"]
@@ -161,18 +157,6 @@ class StarfishDataset(Dataset):
         axs.axis("off")
         if plot_show:
             plt.show()
-
-
-# def preprocess(raw_data_path: Path, output_folder: Path) -> None:
-#     """
-#     Preprocess the raw data and save it to the output folder.
-#     :param raw_data_path: The path to the raw data
-#     :param output_folder: The path to the output folder
-#     """
-#     print(f"Preprocessing data from {raw_data_path}...")
-#     # From what I understand now we do need to do that
-#     pass
-
 
 def create_dataset(data_path, subset=1.0):
     """
