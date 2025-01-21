@@ -75,9 +75,17 @@ def sweep(ctx):
     ctx.run("wandb sweep configs/sweep_config.yaml", echo=True)
 
 @task
+def test_data(ctx):
+    ctx.run("pytest tests/unittests/test_data.py", echo=True)
+
+@task
+def test_model(ctx):
+    ctx.run("pytest tests/unittests/test_model.py", echo=True)
+
+@task
 def test(ctx: Context) -> None:
     """Run tests."""
-    ctx.run("coverage run -m pytest tests/", echo=True, pty=not WINDOWS)
+    ctx.run("coverage run --source=src -m pytest tests/", echo=True, pty=not WINDOWS)
     ctx.run("coverage report -m", echo=True, pty=not WINDOWS)
 
 @task
