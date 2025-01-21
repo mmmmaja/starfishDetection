@@ -177,8 +177,11 @@ cython_debug/
 #.idea/
 starfish-detection-data
 Starfish Detection
-lightning_logs/
+lightning_logs
 wandb
 outputs
 models
 profiling
+multirun
+data
+artifacts
