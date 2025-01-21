@@ -66,7 +66,6 @@ async def lifespan(app: FastAPI):
 
 # Create the FastAPI app
 app = FastAPI(lifespan=lifespan)
-#xxx
 
 
 

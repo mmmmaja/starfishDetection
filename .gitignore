@@ -182,3 +182,6 @@ wandb
 outputs
 models
 profiling
+
+data/
+models/

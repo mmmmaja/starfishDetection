@@ -11,16 +11,16 @@ RUN apt update && \
     libxext6 && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-COPY apis/inference_backend.py inference_backend.py
+COPY src/starfish/apis/inference_backend.py inference_backend.py
 COPY src/starfish/model.py model.py
-COPY lightning_logs/version_0/checkpoints/epoch=0-step=1.ckpt epoch=0-step=1.ckpt
-COPY apis/requirements_api.txt requirements_api.txt
+COPY requirements_backend_inference.txt requirements_backend_inference.txt
 COPY pyproject.toml pyproject.toml
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_api.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_backend_inference.txt.txt
 
 # Set environment variable for PORT with a default value
 ENV PORT=8080
+
 
 EXPOSE $PORT
 # Start the application using Gunicorn with Uvicorn workers
