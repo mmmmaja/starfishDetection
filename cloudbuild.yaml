@@ -1,6 +1,6 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  id: 'Build container image'
+  id: 'Build train container image'
   args: [
     'build',
     '.',
@@ -10,10 +10,26 @@ steps:
     'dockerfiles/train.dockerfile'
   ]
 - name: 'gcr.io/cloud-builders/docker'
-  id: 'Push container image'
+  id: 'Push train container image'
   args: [
     'push',
     'us-central1-docker.pkg.dev/starfish-detection/registry/train'
+  ]
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Build backend container image'
+  args: [
+    'build',
+    '.',
+    '-t',
+    'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend',
+    '-f',
+    'dockerfiles/inference_backend.dockerfile'
+  ]
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Push backend container image'
+  args: [
+    'push',
+    'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend'
   ]
 options:
   env:
