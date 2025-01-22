@@ -6,11 +6,6 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
 from contextlib import asynccontextmanager
-from fastapi.exceptions import HTTPException
-import cv2
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
-import numpy as np
 
 import albumentations as A
 import cv2
@@ -111,23 +106,22 @@ def preprocess_image(image: np.ndarray) -> torch.Tensor:
 #     # Draw the bounding boxes on the image
 #     boxes_data = []
 #     for i, box in enumerate(keep_boxes):
-        
+
 #         x1, y1, x2, y2 = box
 #         boxes_data.append({
 #                 "score": float(keep_scores[i]),
 #                 "box": [int(x1), int(y1), int(x2), int(y2)]
 #             })
-        
+
 #         # Add the bounding box to the image
 #         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 0, 255), thickness=2)
-        
+
 #         # Add the confidence score to the bounding box
 #         cv2.putText(
-#             image, text=f"{keep_scores[i]:.2f}", org=(int(x1), int(y1)), 
+#             image, text=f"{keep_scores[i]:.2f}", org=(int(x1), int(y1)),
 #             fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255, 255, 255), thickness=1)
-    
-#     return image
 
+#     return image
 
 
 # def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float=0.02) -> tuple:
@@ -205,9 +199,8 @@ async def inference(data: UploadFile = File(...)) -> dict:
     #     raise HTTPException(status_code=500) from e
 
 
-
 # @app.post("/show/")
-# # async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
+# # async def: Defines an asynchronous function, allowing FastAPI to handle other requests
 # # while waiting for I/O operations (like reading a file) to complete.
 # async def show(data: UploadFile = File(...)) -> FileResponse:
 #     """

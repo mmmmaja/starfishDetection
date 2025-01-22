@@ -1,21 +1,19 @@
 # from google.cloud import run_v2
-import streamlit as st
-from requests.exceptions import Timeout, RequestException
-import torch
-from requests.exceptions import RequestException, Timeout
-import requests
-import numpy as np
-import matplotlib.pyplot as plt
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import requests
+import streamlit as st
 import torch
 import torchvision
+from requests.exceptions import RequestException, Timeout
 
 # Constants for the Google Cloud project and region
 PROJECT = "starfish-detection"
 REGION = "us-central1"
 
 
-def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.02) -> np.ndarray:
+def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0.02) -> np.ndarray:
     """
     Process the prediction and draw the bounding boxes on the image
     :param prediction: The prediction from the model
@@ -25,11 +23,11 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.0
     """
 
     # Extract the scores and boxes from the prediction
-    scores = prediction['scores']
-    boxes = prediction['boxes']
+    scores = prediction["scores"]
+    boxes = prediction["boxes"]
 
     keep_scores, keep_boxes = NMS(scores, boxes, iou_threshold=NMS_threshold)
-    print(f'Before NMS: {len(scores)} After NMS: {len(keep_scores)}')
+    print(f"Before NMS: {len(scores)} After NMS: {len(keep_scores)}")
 
     # Resize the image
     image = cv2.resize(image, (640, 640))
@@ -37,26 +35,27 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.0
     # Draw the bounding boxes on the image
     boxes_data = []
     for i, box in enumerate(keep_boxes):
-        
         x1, y1, x2, y2 = box
-        boxes_data.append({
-                "score": float(keep_scores[i]),
-                "box": [int(x1), int(y1), int(x2), int(y2)]
-            })
-        
+        boxes_data.append({"score": float(keep_scores[i]), "box": [int(x1), int(y1), int(x2), int(y2)]})
+
         # Add the bounding box to the image
         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 0, 255), thickness=2)
-        
+
         # Add the confidence score to the bounding box
         cv2.putText(
-            image, text=f"{keep_scores[i]:.2f}", org=(int(x1), int(y1)), 
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255, 255, 255), thickness=1)
-    
+            image,
+            text=f"{keep_scores[i]:.2f}",
+            org=(int(x1), int(y1)),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.5,
+            color=(255, 255, 255),
+            thickness=1,
+        )
+
     return image
 
 
-
-def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float=0.02) -> tuple:
+def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float = 0.02) -> tuple:
     """
     Non-Maximum Suppression
     :param scores: Tensor of shape (N,) containing the confidence scores
@@ -86,7 +85,7 @@ def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float=0.02) ->
     return keep_scores, keep_boxes
 
 
-@st.cache_resource  
+@st.cache_resource
 def get_backend_url():
     """
     Get the URL of the backend service.
@@ -101,7 +100,7 @@ def get_backend_url():
     #     if service.name.split("/")[-1] == "backend":
     #         print(f"Backend service found: {service.uri}")
     #         return service.uri
-        
+
     # name = os.environ.get("backend", None)
     # return name
 
@@ -245,7 +244,7 @@ def main() -> None:
 
                 # Make a histogram of the scores
                 # Create the plot
-                fig = plot_confidence_histogram(result['scores'], theme='dark')
+                fig = plot_confidence_histogram(result["scores"], theme="dark")
                 # Show the plot
                 st.pyplot(fig)
 
