@@ -56,7 +56,7 @@ will check the repositories and the code to verify your answers.
 * [X] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
 * [X] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
-* [X] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
+* [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 * [ ] Do a bit of code typing and remember to document essential parts of your code (M7)
 * [X] Setup version control for your data or part of your data (M8)
 * [X] Add command line interfaces and project commands to your code where it makes sense (M9)
@@ -143,7 +143,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as random rotations, flips, scaling, and color adjustments to the images. These augmentations were applied to prevent overfitting and improve the model's generalization capabilities.
+We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as color distortion, Gaussian blur, motion blur, and random fog to the images. These augmentations were applied with our underwater video setting in mind to prevent overfitting and improve the model's generalization capabilities.
 
 ## Coding environment
 
