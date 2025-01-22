@@ -6,4 +6,4 @@ train_val_test_split:
   - 0.1
   - 0.1
 subset: 1
-num_workers: 1
+num_workers: 4
