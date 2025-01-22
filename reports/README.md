@@ -205,7 +205,7 @@ we make use of the experiments configs to make overides to the default config fx
 >
 > Answer:
 
---- question 6 fill here ---
+To ensure good code quality we used Ruff. Ruff is a pip package that helps us finding and correcting lines of code that are not complying with the pep8 coding guidelines. To enforce the rules we added a pre-commit hook with "pip install pre-commit" that will block commits from being pushed if the modified files does not comply with pep8. Furthermore, we have added a workflow that will trigger every time we push changes to a pull-request or to the main branch that will run ruff commands to format the code in a way that complies with pep8. This saves means we don't have to run the ruff commands manually.
 
 ## Version control
 
@@ -245,7 +245,7 @@ we currently don't test the train.py script as its mostly just instantiating the
 >
 > Answer:
 
---- question 8 fill here ---
+Even if we had a 100% code coverage we are not guarenteed to be error free. You can have a high code coverage but with low test quality if the tests do not account for most of the use cases. But even if the quality of the tests were high, you can never be guarenteed an error free project.
 
 ### Question 9
 
@@ -262,7 +262,7 @@ we currently don't test the train.py script as its mostly just instantiating the
 
 Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch.
 
-Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities.
+Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in question 6.
 
 ### Question 10
 
@@ -277,7 +277,7 @@ Before merging, the PR underwent a code review process where other team members 
 >
 > Answer:
 
-Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the dvc pull command did not work for us, so we used gsutil -m cp -r gs://starfish-detection-data . instead. It would be beneficial to have version control of the data in a case where new data is collected over time and we want to be able to retrain the model as the new data comes in. This is especially important if there is a data distributin shift, in which case training on the updated data is crucial to continued model performance. Nonetheless, we may also want to be able to analyze the distribution of the data at different points, so having access to previous versions would be important.
+Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the dvc pull command did not work for us, so we used gsutil -m cp -r gs://starfish-detection-data . instead. It would be beneficial to have version control of the data in a case where new data is collected over time and we want to be able to retrain the model as the new data comes in. This is especially important if there is a data distribution shift, in which case training on the updated data is crucial to continued model performance. Nonetheless, we may also want to be able to analyze the distribution of the data at different points, so having access to previous versions would be important.
 
 ### Question 11
 
