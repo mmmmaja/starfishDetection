@@ -17,6 +17,7 @@ steps:
   ]
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Build backend container image'
+  waitFor: ['-']
   args: [
     'build',
     '.',
@@ -27,6 +28,7 @@ steps:
   ]
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Push backend container image'
+  waitFor: ['Build backend container image']
   args: [
     'push',
     'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend'
