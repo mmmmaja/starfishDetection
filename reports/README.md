@@ -163,7 +163,7 @@ We used the third-party image augmentation library, [Albumentations](https://git
 >
 > Answer:
 
---- question 4 fill here ---
+We managed dependencies in our project by using requirements files. Whenever we needed a new package we added it to the file and used `pip show PACKAGE` to get the package version, which we then added to the requirements file. When developing locally we created a Conda environment wherein we installed all the packages in the requirements files, and when developing on the Cloud we installed the packages directly into a Docker container. The `Documentation` section of the main README contains instructions on reproducing our environment exactly under the `Environment` subsection. The process involves creating a new Conda environment with a specific Python version and then installing the packages in the requirements files.
 
 ### Question 5
 
