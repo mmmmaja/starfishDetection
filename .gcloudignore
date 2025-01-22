@@ -183,5 +183,6 @@ outputs
 models
 profiling
 multirun
-data
 artifacts
+models/
+runs/
