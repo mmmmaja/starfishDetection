@@ -57,7 +57,7 @@ will check the repositories and the code to verify your answers.
 * [X] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
 * [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
-* [ ] Do a bit of code typing and remember to document essential parts of your code (M7)
+* [X] Do a bit of code typing and remember to document essential parts of your code (M7)
 * [X] Setup version control for your data or part of your data (M8)
 * [X] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [X] Construct one or multiple docker files for your code (M10)
@@ -260,7 +260,9 @@ we currently don't test the train.py script as its mostly just instanciating the
 >
 > Answer:
 
---- question 9 fill here ---
+Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch.
+
+Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities.
 
 ### Question 10
 
@@ -477,7 +479,13 @@ Secret
 >
 > Answer:
 
---- question 23 fill here ---
+We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API features two main endpoints:
+1. `\inference\` endpoint:
+   When a user uploads an image the API loads the model, executes predictions to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
+2. `\show\` endpoint:
+    Instead of returning raw predictions, this endpoint overlays the predicted bounding boxes and confidence scores directly onto the submitted image. Through this endpoint we were able to visually inspect model's detections and is especially useful for testing.
+
+Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
 
 ### Question 24
 
