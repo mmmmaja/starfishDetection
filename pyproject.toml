@@ -19,6 +19,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dynamic = ["dependencies", "optional-dependencies"]
 
+[project.scripts]
+train = "starfish.train:train"
+
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
@@ -27,6 +30,7 @@ dev = {file = ['requirements_dev.txt']}
 
 [tool.ruff]
 line-length = 120
+lint.select = ["I"]
 
 [tool.coverage.run]
 omit = ["tests/*"]

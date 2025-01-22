@@ -1,0 +1,6 @@
+outs:
+- md5: 46cae104b8fea2b8708165b86d991830.dir
+  size: 15225448315
+  nfiles: 23511
+  hash: md5
+  path: starfish-detection-data

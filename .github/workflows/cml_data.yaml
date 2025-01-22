@@ -1,0 +1,21 @@
+name: DVC Workflow
+
+on:
+  pull_request:
+    branches:
+    - master
+    paths:
+    - '**/*.dvc'
+    - '.dvc/**'
+
+jobs:
+  print-update-message:
+    name: Print Update Message
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Print message
+      run: echo "Data has been updated"

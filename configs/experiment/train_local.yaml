@@ -1,0 +1,37 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: default_data_module
+  - override /model: default_model
+  - override /trainer: default_trainer
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["train_local", ]
+
+data:
+  data_from_bucket: false
+  batch_size: 4
+  train_val_test_split:
+    - 0.8
+    - 0.1
+    - 0.1
+  subset: 0.002
+  num_workers: 1
+
+trainer:
+  min_epochs: 1
+  max_epochs: 1
+  accelerator: cpu
+  limit_train_batches: 2
+  limit_val_batches: 2
+  limit_test_batches: 2
+
+model:
+  optimizer:
+    lr: 0.002
+  compile: False

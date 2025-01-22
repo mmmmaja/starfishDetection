@@ -1,0 +1,42 @@
+{
+  "os":  "macOS-14.6-arm64-arm-64bit",
+  "python":  "CPython 3.11.11",
+  "startedAt":  "2025-01-17T12:30:37.230355Z",
+  "program":  "<python with no main file>",
+  "git":  {
+    "remote":  "https://github.com/mmmmaja/starfishDetection",
+    "commit":  "8be9e80b68074de3b2a92015833e92ca8b0548f8"
+  },
+  "email":  "rosalouiseelinornielsen@live.dk",
+  "root":  "/Users/rosalouisemarker/Desktop/starfishDetection",
+  "host":  "rosas-air.students.clients.local",
+  "executable":  "/opt/anaconda3/envs/my_environment/bin/python",
+  "cpu_count":  8,
+  "cpu_count_logical":  8,
+  "disk":  {
+    "/":  {
+      "total":  "245107195904",
+      "used":  "233308385280"
+    },
+    "/System/Volumes/Data":  {
+      "total":  "245107195904",
+      "used":  "233308385280"
+    }
+  },
+  "memory":  {
+    "total":  "17179869184"
+  },
+  "cpu":  {
+    "count":  8,
+    "countLogical":  8
+  },
+  "apple":  {
+    "name":  "Apple M3",
+    "ecpuCores":  4,
+    "pcpuCores":  4,
+    "gpuCores":  10,
+    "memoryGb":  16,
+    "swapTotalBytes":  "46170898432",
+    "ramTotalBytes":  "17179869184"
+  }
+}
