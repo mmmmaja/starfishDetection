@@ -1,5 +1,5 @@
 # Starfish Detection
-This is the repository for the project in DTU's Winter 2025 course 02476 Machine Learning Operations.
+This is the repository for the project in DTU's Winter 2025 course 02476 Machine Learning Operations. Check out our documentation site at [Starfish Detection](https://mmmmaja.github.io/starfishDetection/).
 
 ## Project description
 
@@ -144,6 +144,16 @@ invoke test-data
 Run model tests
 ```bash
 invoke test-model
+```
+
+### Documentation Site
+Build site locally
+```bash
+mkdocs build
+```
+Deploy site to `gh-pages` branch
+```bash
+mkdocs gh-deploy
 ```
 
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
