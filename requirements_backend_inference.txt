@@ -20,3 +20,4 @@ opencv-python-headless==4.10.0.84
 dvc-gs
 python-multipart
 wandb
+torchmetrics[detection]

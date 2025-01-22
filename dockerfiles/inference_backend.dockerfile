@@ -20,7 +20,6 @@ COPY requirements_backend_inference.txt requirements_backend_inference.txt
 COPY pyproject.toml pyproject.toml
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_backend_inference.txt
-
 # Set environment variable for PORT with a default value
 ENV PORT=8080
 
@@ -30,14 +29,15 @@ EXPOSE $PORT
 CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
 
 
+# Instructions on how to build and run the image and then deploy the API to the cloud
 
 # 1. Build the image
-# docker build -t backend:latest -f dockerfiles/inference_backend.dockerfile .
+    # docker build -t backend:latest -f dockerfiles/inference_backend.dockerfile .
 
 # 2. Run image
-# docker run --rm -p 8000:8000 -e "PORT=8000" backend:latest
+    # docker run --rm -p 8080:8080 -e "PORT=8080" -e "WANDB_API_KEY=xxx"  backend:latest
 
-# 3. Go to http://localhost:8000/docs to test the API
+# 3. Go to http://localhost:8080/docs to test the API
 
 # 4. Deploy the the cloud:
     
@@ -47,8 +47,7 @@ CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--worke
     # Verify the images in the artifact registry
     # gcloud artifacts docker images list us-central1-docker.pkg.dev/starfish-detection/frontend-backend
 
-
-    # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated
+    # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --set-secrets=WANDB_API_KEY=WANDB_API_KEY:latest --port=8080
 
 
 

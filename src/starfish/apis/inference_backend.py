@@ -24,12 +24,9 @@ import torchvision
 RUNNING_LOCALLY = os.getenv("RUNNING_LOCALLY", "False").lower() in ("true", "1", "t")
 print(f"Running locally: {RUNNING_LOCALLY}")
 
-if RUNNING_LOCALLY:
-    # Initialize W&B for local runs
-    wandb.login()
 
 # entity = "luciagordon-harvard-university"
-# project = "starfishDetection-src_starfish"
+# project = "starfishDetection-src_starfish" q
 ARTIFACT_PATH = "luciagordon-harvard-university/Starfish Detection/model-z6xxz6rn:v0"
 
 
@@ -46,16 +43,18 @@ async def lifespan(app: FastAPI):
     """
     global model, device
 
-    # Initialize W&B API
-    api = wandb.Api()
-
     # Initialize W&B API only if not running locally
     if not RUNNING_LOCALLY:
-        # Ensure WANDB_API_KEY is set in the environment
-        wandb_api_key = os.getenv("WANDB_API_KEY")
-        if not wandb_api_key:
+
+        # Initialize W&B using environment variable
+        key = os.getenv("WANDB_API_KEY")
+        if not key:
             raise HTTPException(status_code=500, detail="W&B API key not found in environment variables.")
-        os.environ["WANDB_API_KEY"] = wandb_api_key  # W&B will automatically use this
+        else:
+            print("Logging in with W&B API key...")
+            wandb.login(key=key)
+    else:
+        wandb.login()
 
     try:
         # Initialize W&B API
