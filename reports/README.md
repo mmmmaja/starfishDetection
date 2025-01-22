@@ -394,7 +394,7 @@ torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can
 >
 > Answer:
 
-We used pdb at one point and another point used gihub history to find that the optimizer accidentaly was changed to ADAM. 
+We used pdb at one point and another point used gihub history to find that the optimizer accidentaly was changed to ADAM.
 Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97% when profiling a two batches. The following slowest are all internal model function calls like aten::conv2d and we have to go very far down get to any code we have touched which is the dataloader. In general we found that the fasterrcnn_resnet50_fpn contrary to its name was really slow and when trying to run in with mps as gpu the runtime increased by orders of magnitude. I think that this is because some backend pytorch function aren't ported to mps yet which results in alot of moving data between cpu and gpu.
 
 ## Working in the cloud

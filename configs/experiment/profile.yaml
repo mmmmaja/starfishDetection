@@ -37,4 +37,3 @@ model:
   optimizer:
     lr: 0.002
   compile: False
-
