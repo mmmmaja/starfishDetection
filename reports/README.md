@@ -229,7 +229,7 @@ and for the FasterRCNNLightning model and the FasterRCNNLightning module in test
 
 We have also implemented integration test for the API and the utility functions.
 
-we currently don't test the train.py script as its mostly just instanciating the modules and running them.
+we currently don't test the train.py script as its mostly just instantiating the modules and running them.
 
 
 ### Question 8
@@ -260,7 +260,7 @@ we currently don't test the train.py script as its mostly just instanciating the
 >
 > Answer:
 
---- question 9 fill here ---
+Our workflow did include branches and pull requests. We used branches for implementing some of the different features in the project such as profiling, logging, and pre-commit hooks. We used pull requests to merge these into a development branch before merging development into master when the code was confirmed to work.
 
 ### Question 10
 
@@ -292,7 +292,7 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
---- question 11 fill here ---
+Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581](Check pre-commit example action workflow) shows one of our GitHub actions workflows.
 
 ## Running code and tracking experiments
 
@@ -311,12 +311,12 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
-As mentioned in question 5 we use hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use hydra from the terminal like
+As mentioned in question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
 
 ```bash
 train data.batch_size=128
 ```
-or write a experiment config with several overrides like with our train_local.yaml which we can run with
+or write an experiment config with several overrides like with our train_local.yaml which we can run with
 
 ```bash
 train +experiment=train_local
@@ -335,7 +335,17 @@ train +experiment=train_local
 >
 > Answer:
 
---- question 13 fill here ---
+We did several things to ensure reproducibility. First, all parameters and hyperparameters are saved on Wandb whenever an experiment is run. In addition, we have these lines in `trainer.py` to ensure that random number generation does not impact reproducibility.
+
+```
+torch.manual_seed(0)
+np.random.seed(0)
+random.seed(0)
+
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # sets CuBLAS workspace configuration for deterministic behavior
+torch.backends.cudnn.deterministic = True  # ensures that the CUDA backend produces deterministic results
+torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can introduce non-deterministic behavior
+```
 
 ### Question 14
 
