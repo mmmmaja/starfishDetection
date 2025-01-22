@@ -23,4 +23,4 @@ RUN pip install . --no-deps --no-cache-dir --verbose
 
 # ENTRYPOINT ["sh", "-c", "gsutil -m cp -r gs://starfish-detection-data . && python -u src/starfish/train.py"]
 # ENTRYPOINT ["sh", "-c", "python -u src/starfish/train.py"]
-ENTRYPOINT ["sh", "-c", "train trainer.accelerator=gpu"]
+ENTRYPOINT ["sh", "-c", "train"]
