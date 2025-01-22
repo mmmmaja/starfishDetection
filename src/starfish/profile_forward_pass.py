@@ -1,8 +1,9 @@
-from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity
-from starfish.model import FasterRCNNLightning
-from torchvision.transforms import functional as F
-from PIL import Image
 import numpy as np
+from PIL import Image
+from torch.profiler import ProfilerActivity, profile, tensorboard_trace_handler
+from torchvision.transforms import functional as F
+
+from starfish.model import FasterRCNNLightning
 
 image = Image.fromarray(
     np.uint8(np.random.rand(224, 224, 3) * 255)
