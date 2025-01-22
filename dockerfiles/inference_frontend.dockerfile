@@ -10,11 +10,13 @@ RUN apt update && \
     libxext6 && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-COPY apis/requirements_frontend_inference.txt requirements_frontend_inference.txt
-COPY apis/inference_frontend.py inference_frontend.py
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r app/requirements_frontend.txt
+COPY src/starfish/apis/inference_frontend.py inference_frontend.py
+COPY requirements_frontend_inference.txt requirements_frontend_inference.txt
+
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_frontend_inference.txt
+ENV PORT=8080
 
 EXPOSE $PORT
 
-CMD ["streamlit", "run", "frontend.py", "--server.port", "$PORT"]
+CMD ["streamlit", "run", "inference_frontend.py", "--bind", "0.0.0.0:8080"]
