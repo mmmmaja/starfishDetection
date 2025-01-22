@@ -1,12 +1,14 @@
+import sys
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+import albumentations as A
+import cv2
 import torch
+from albumentations.pytorch.transforms import ToTensorV2
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
-from contextlib import asynccontextmanager
-import cv2
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
-import sys
-from pathlib import Path
+
 from src.starfish.model import NMS, FasterRCNNLightning
 
 # Inser the path to the main directory (1 level up)

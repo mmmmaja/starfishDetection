@@ -1,14 +1,15 @@
+import os
+import random
+
+import numpy as np
 import torch
-from model import FasterRCNNLightning
+import typer
 
 # starfish is a function that returns the training, validation and test sets
 # from the data.py file
 from data import starfish
+from model import FasterRCNNLightning
 from sklearn.metrics import classification_report
-import typer
-import numpy as np
-import random
-import os
 
 # Ensure reproducibility by setting seeds for random number generation
 torch.manual_seed(409)

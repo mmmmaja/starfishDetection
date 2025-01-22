@@ -1,8 +1,10 @@
+import os
+
 import pytest
 import torch
-import os
-from starfish.model import FasterRCNNLightning
 from starfish.data import StarfishDataModule
+from starfish.model import FasterRCNNLightning
+
 from tests import _PATH_DATA
 
 

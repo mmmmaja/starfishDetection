@@ -1,10 +1,11 @@
+from typing import Any, Dict
+
 import pytorch_lightning as pl
-import torchvision
-from torchvision.models.detection import fasterrcnn_resnet50_fpn
 import torch
-from typing import Dict, Any
+import torchvision
 from torchmetrics.detection import IntersectionOverUnion
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
 
 class FasterRCNNLightning(pl.LightningModule):

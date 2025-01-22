@@ -1,15 +1,16 @@
-from pathlib import Path
-from torch.utils.data import Dataset, DataLoader, random_split
 import os
-import pandas as pd
-import cv2
-import torch
-import albumentations as A
-import matplotlib.pyplot as plt
-from albumentations.pytorch.transforms import ToTensorV2
-import numpy as np
+from pathlib import Path
 from typing import Optional, Tuple
+
+import albumentations as A
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import pytorch_lightning as pl
+import torch
+from albumentations.pytorch.transforms import ToTensorV2
+from torch.utils.data import DataLoader, Dataset, random_split
 
 
 def format_annotations(annotation_dict, image_width, image_height):

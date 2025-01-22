@@ -1,8 +1,9 @@
+import glob
+
+import torch
 from fastapi import FastAPI, UploadFile
 from model import FasterRCNNLightning
 from PIL import Image
-import torch
-import glob
 
 app = FastAPI()
 checkpoint_path = glob.glob("Starfish Detection/**/*.ckpt", recursive=True)[0]

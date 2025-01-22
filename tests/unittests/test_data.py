@@ -1,9 +1,10 @@
-from starfish.data import StarfishDataset
-from starfish.data import StarfishDataModule
-from tests import _PATH_DATA
-import random
 import os
+import random
+
 import pytest
+from starfish.data import StarfishDataModule, StarfishDataset
+
+from tests import _PATH_DATA
 
 
 @pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
