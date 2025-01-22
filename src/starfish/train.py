@@ -8,6 +8,8 @@ import torch
 from hydra.utils import instantiate
 from loguru import logger as log
 from omegaconf import DictConfig
+import omegaconf
+import wandb
 from torch.profiler import ProfilerActivity, profile, tensorboard_trace_handler
 
 # Ensure reproducibility by setting seeds for random number generation
@@ -37,6 +39,9 @@ def train(cfg: DictConfig):
     # 2. Instantiate the model
     model = instantiate(cfg.model)
     logger = instantiate(cfg.logger)
+
+    # Log the hyperparameters
+    logger.log_hyperparams(cfg)
 
     # 3. Instantiate the trainer
     trainer = instantiate(cfg.trainer, logger=logger)  # callbacks=[early_stopping], logger=True)
