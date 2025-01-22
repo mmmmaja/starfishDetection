@@ -33,6 +33,24 @@ steps:
     'push',
     'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend'
   ]
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Build frontend container image'
+  waitFor: ['-']
+  args: [
+    'build',
+    '.',
+    '-t',
+    'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend',
+    '-f',
+    'dockerfiles/inference_frontend.dockerfile'
+  ]
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'Push frontend container image'
+  waitFor: ['Build frontend container image']
+  args: [
+    'push',
+    'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend'
+  ]
 options:
   env:
     - DOCKER_BUILDKIT=1
