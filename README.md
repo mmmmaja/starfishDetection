@@ -71,7 +71,11 @@ The directory structure of the project looks like this:
 ### Environment
 Create a dedicated environment to keep track of the packages for the project
 ```bash
-invoke conda
+conda create --name starfish-env python=3.11
+conda activate starfish-env
+pip install -r requirements.txt
+pip install -r requirements_dev.txt
+pip install -e .
 ```
 
 ### Data
