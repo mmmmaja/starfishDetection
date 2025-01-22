@@ -36,7 +36,7 @@ def dev_requirements(ctx: Context) -> None:
 
 @task
 def conda(ctx):
-    ctx.run("conda create --name starfish-env python3.11", echo=True)
+    ctx.run("conda create --name starfish-env python=3.11", echo=True)
     ctx.run("conda activate starfish-env", echo=True)
     ctx.run("pip install -r requirements.txt", echo=True)
     ctx.run("pip install -r requirements_dev.txt", echo=True)
