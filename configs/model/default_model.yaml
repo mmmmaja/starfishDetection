@@ -5,7 +5,8 @@ log_ap: true
 optimizer:
   _target_: torch.optim.SGD
   _partial_: true
-  lr: 0.0001
+  lr: 0.01
+  momentum: 0.8
 
 scheduler:
   _target_: torch.optim.lr_scheduler.StepLR
