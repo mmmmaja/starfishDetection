@@ -609,6 +609,7 @@ Additionally we automated the build of the Docker image required for the backend
 > Answer:
 
 --- question 30 fill here ---
+Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
 
 ### Question 31
 
