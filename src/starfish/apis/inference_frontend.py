@@ -64,41 +64,48 @@ def object_detection(image: bytes, backend: str) -> dict:
         return {"error": error_message}
     
 
-def plot_confidence_histogram(data: torch.Tensor, bins: int = 20) -> plt.Figure:
+def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = 'dark') -> plt.Figure:
     """
-    Plot a histogram of the confidence scores.
+    Plot a histogram of the confidence scores with improved aesthetics and dark mode compatibility.
     :param data: The confidence scores
     :param bins: The number of bins for the histogram
+    :param theme: 'dark' or 'light' theme
     :return: The histogram plot
     """
-    plt.style.use('dark_background')
+    if theme == 'dark':
+        plt.style.use('dark_background')
+    else:
+        plt.style.use('seaborn-whitegrid')
 
     fig, ax = plt.subplots(figsize=(8, 4), facecolor='none')
 
-    colormap = plt.cm.get_cmap('viridis')
     # Create the histogram
     n, bins, patches = ax.hist(data, bins=bins, edgecolor='white', alpha=0.7, linewidth=0.7)
-    bin_centers = 0.5 * (bins[:-1] + bins[1:])
-    
-    # scale values to interval [0,1]
-    col = bin_centers - min(bin_centers)
-    col /= max(col)
 
-    for c, p in zip(col, patches):
-        plt.setp(p, 'facecolor', colormap(c))
-    
-    # Set title and labels with light colors
-    ax.set_title('Confidence Scores Distribution', color='white', fontsize=16, pad=15)
-    ax.set_xlabel('Confidence Score', color='white', fontsize=12, labelpad=10)
-    ax.set_ylabel('Frequency', color='white', fontsize=12, labelpad=10)
+    # Normalize bin counts for color mapping
+    norm = plt.Normalize(min(n), max(n))
+    colormap = plt.cm.viridis  # Suitable for dark backgrounds
+
+    # Apply colors to each bin based on their normalized count
+    for count, patch in zip(n, patches):
+        color = colormap(norm(count))
+        patch.set_facecolor(color)
+
+    # Set title and labels with appropriate colors
+    title_color = 'white' if theme == 'dark' else 'black'
+    label_color = 'white' if theme == 'dark' else 'black'
+
+    ax.set_title('Confidence Scores Distribution', color=title_color, fontsize=16, pad=15)
+    ax.set_xlabel('Confidence Score', color=label_color, fontsize=12, labelpad=10)
+    ax.set_ylabel('Frequency', color=label_color, fontsize=12, labelpad=10)
 
     # Customize tick parameters
-    ax.tick_params(axis='x', colors='white', labelsize=10)
-    ax.tick_params(axis='y', colors='white', labelsize=10)
+    ax.tick_params(axis='x', colors=label_color, labelsize=10)
+    ax.tick_params(axis='y', colors=label_color, labelsize=10)
 
     # Customize spines
     for spine in ax.spines.values():
-        spine.set_edgecolor('white')
+        spine.set_edgecolor(label_color)
 
     # Add gridlines for better readability
     ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray', alpha=0.3)
@@ -111,6 +118,22 @@ def main() -> None:
     Main function of the Streamlit frontend.
     """
     st.set_page_config(page_title="Starfish Detection", layout="centered")
+
+    # Sidebar for additional controls
+    st.sidebar.header("Settings")
+
+    # Theme selection (optional enhancement)
+    theme = st.sidebar.radio("Select Theme", options=["Dark", "Light"], index=0)
+
+     # Slider to adjust IoU threshold
+    iou_threshold = st.sidebar.slider(
+        "IoU Threshold for NMS",
+        min_value=0.,
+        max_value=1.,
+        value=0.5,
+        step=0.05,
+        help="Adjust the Intersection over Union (IoU) threshold for Non-Maximum Suppression."
+    )
 
     # Connect to the backend service
     backend = get_backend_url()
@@ -151,7 +174,7 @@ def main() -> None:
 
                 # Make a histogram of the scores                
                 # Create the plot
-                fig = plot_confidence_histogram(result['scores'])
+                fig = plot_confidence_histogram(result['scores'], theme=theme.lower())
                 # Show the plot
                 st.pyplot(fig)
 

@@ -48,6 +48,7 @@ CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--worke
     # gcloud artifacts docker images list us-central1-docker.pkg.dev/starfish-detection/frontend-backend
 
     # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --set-secrets=WANDB_API_KEY=WANDB_API_KEY:latest --port=8080
+    gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/cloud_backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080
 
 
 

@@ -42,8 +42,8 @@ async def lifespan(app: FastAPI):
 
     if not RUNNING_LOCALLY:
         # Use the model path in the Google Cloud Storage
-        model_path = "gs://starfish-model/model.ckpt"
-        
+        #model_path = "gs://starfish-model/model.ckpt"
+        model_path = '/gcs/starfish-model/model.ckpt'
     else:
         # Use public model path
         model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
