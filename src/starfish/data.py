@@ -199,7 +199,14 @@ class StarfishDataModule(pl.LightningDataModule):
 
         # Define the transformations to apply to the data
         self.transforms = A.Compose(
-            [A.Resize(640, 640), A.HorizontalFlip(p=0.5), A.RandomBrightnessContrast(p=0.2), ToTensorV2()],
+            [
+                A.Resize(640, 640),
+                A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2, p=0.8),  # Color distortions
+                A.GaussianBlur(blur_limit=(3, 7), p=0.5),  # Blur to mimic turbidity
+                A.MotionBlur(blur_limit=7, p=0.3),  # Motion blur for dynamic scenes
+                A.RandomFog(p=0.4),  # Fog-like effect
+                ToTensorV2(),
+            ],
             bbox_params=A.BboxParams(format="pascal_voc", min_visibility=0.0, label_fields=["labels"]),
         )
 
