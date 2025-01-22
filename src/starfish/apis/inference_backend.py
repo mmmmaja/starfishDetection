@@ -5,18 +5,18 @@ import sys
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
-from model import FasterRCNNLightning
-import torch
-from fastapi import FastAPI, File, UploadFile
 from contextlib import asynccontextmanager
-from fastapi.exceptions import HTTPException
-import cv2
-from fastapi.responses import FileResponse
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
-import torchvision
-import numpy as np
 
+import albumentations as A
+import cv2
+import numpy as np
+import torch
+import torchvision
+from albumentations.pytorch.transforms import ToTensorV2
+from fastapi import FastAPI, File, UploadFile
+from fastapi.exceptions import HTTPException
+from fastapi.responses import FileResponse
+from model import FasterRCNNLightning
 
 # Run this command to set the environment variable:
 # set RUNNING_LOCALLY=True
@@ -29,7 +29,8 @@ print(f"Running locally: {RUNNING_LOCALLY}")
 """
 Create a FastAPI application that can do inference using the model (M22)
 This is the backend service that retrieves the prediction from the image
-"""    
+"""
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,11 +40,10 @@ async def lifespan(app: FastAPI):
     """
     global model, device
 
-
     if not RUNNING_LOCALLY:
         # Use the model path in the Google Cloud Storage
-        #model_path = "gs://starfish-model/model.ckpt"
-        model_path = '/gcs/starfish-model/model.ckpt'
+        # model_path = "gs://starfish-model/model.ckpt"
+        model_path = "/gcs/starfish-model/model.ckpt"
     else:
         # Use public model path
         model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
@@ -53,7 +53,7 @@ async def lifespan(app: FastAPI):
         model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
-        
+
     # Configure the device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -67,7 +67,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-
 def preprocess_image(image: np.ndarray) -> torch.Tensor:
     """
     Preprocess the image before passing it to the model
@@ -79,15 +78,13 @@ def preprocess_image(image: np.ndarray) -> torch.Tensor:
     image = image / 255.0
     # Make it of a type double
     image = image.astype("float32")
-    transform = A.Compose([
-            A.Resize(640, 640),
-            ToTensorV2()
-        ], 
+    transform = A.Compose(
+        [A.Resize(640, 640), ToTensorV2()],
     )
     return transform(image=image)["image"]
 
 
-def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.02) -> np.ndarray:
+def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0.02) -> np.ndarray:
     """
     Process the prediction and draw the bounding boxes on the image
     :param prediction: The prediction from the model
@@ -97,11 +94,11 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.0
     """
 
     # Extract the scores and boxes from the prediction
-    scores = prediction['scores']
-    boxes = prediction['boxes']
+    scores = prediction["scores"]
+    boxes = prediction["boxes"]
 
     keep_scores, keep_boxes = NMS(scores, boxes, iou_threshold=NMS_threshold)
-    print(f'Before NMS: {len(scores)} After NMS: {len(keep_scores)}')
+    print(f"Before NMS: {len(scores)} After NMS: {len(keep_scores)}")
 
     # Resize the image
     image = cv2.resize(image, (640, 640))
@@ -109,26 +106,27 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.0
     # Draw the bounding boxes on the image
     boxes_data = []
     for i, box in enumerate(keep_boxes):
-        
         x1, y1, x2, y2 = box
-        boxes_data.append({
-                "score": float(keep_scores[i]),
-                "box": [int(x1), int(y1), int(x2), int(y2)]
-            })
-        
+        boxes_data.append({"score": float(keep_scores[i]), "box": [int(x1), int(y1), int(x2), int(y2)]})
+
         # Add the bounding box to the image
         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 0, 255), thickness=2)
-        
+
         # Add the confidence score to the bounding box
         cv2.putText(
-            image, text=f"{keep_scores[i]:.2f}", org=(int(x1), int(y1)), 
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255, 255, 255), thickness=1)
-    
+            image,
+            text=f"{keep_scores[i]:.2f}",
+            org=(int(x1), int(y1)),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.5,
+            color=(255, 255, 255),
+            thickness=1,
+        )
+
     return image
 
 
-
-def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float=0.02) -> tuple:
+def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float = 0.02) -> tuple:
     """
     Non-Maximum Suppression
     :param scores: Tensor of shape (N,) containing the confidence scores
@@ -167,7 +165,7 @@ async def root():
 
 
 @app.post("/inference/")
-# async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
+# async def: Defines an asynchronous function, allowing FastAPI to handle other requests
 # while waiting for I/O operations (like reading a file) to complete.
 async def inference(data: UploadFile = File(...)) -> dict:
     """
@@ -177,7 +175,7 @@ async def inference(data: UploadFile = File(...)) -> dict:
     """
 
     # Read the image once it was uploaded
-    with open('image.jpg', 'wb') as image:
+    with open("image.jpg", "wb") as image:
         content = await data.read()
         image.write(content)
         image.close()
@@ -186,7 +184,7 @@ async def inference(data: UploadFile = File(...)) -> dict:
     image = cv2.imread("image.jpg")
     if image is None:
         raise HTTPException(status_code=400, detail="Invalid image file.")
-    
+
     image_processed = preprocess_image(image)
     # Add a batch dimension
     batch = image_processed.unsqueeze(0)
@@ -198,18 +196,13 @@ async def inference(data: UploadFile = File(...)) -> dict:
             # Prediction is the bounding boxes and the scores
             prediction = model(batch.to(device))
             print(prediction)
-            return {
-                "scores": prediction[0]['scores'].tolist(),
-                "boxes": prediction[0]['boxes'].tolist()
-            }
+            return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
     except Exception as e:
-        
         raise HTTPException(status_code=500) from e
 
 
-
 @app.post("/show/")
-# async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
+# async def: Defines an asynchronous function, allowing FastAPI to handle other requests
 # while waiting for I/O operations (like reading a file) to complete.
 async def show(data: UploadFile = File(...)) -> FileResponse:
     """
@@ -219,7 +212,7 @@ async def show(data: UploadFile = File(...)) -> FileResponse:
     :return: The image with the bounding boxes drawn on it
     """
 
-    with open('image.jpg', 'wb') as image:
+    with open("image.jpg", "wb") as image:
         content = await data.read()
         image.write(content)
 
@@ -236,7 +229,7 @@ async def show(data: UploadFile = File(...)) -> FileResponse:
         # Prediction is the bounding boxes and the scores
         prediction = model(batch.to(device))
 
-    image = process_result({"scores": prediction[0]['scores'], "boxes": prediction[0]['boxes']}, image)
+    image = process_result({"scores": prediction[0]["scores"], "boxes": prediction[0]["boxes"]}, image)
 
     cv2.imwrite("output.jpg", image)
     return FileResponse("output.jpg")

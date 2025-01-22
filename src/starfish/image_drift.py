@@ -1,21 +1,22 @@
+import sys
+from pathlib import Path
+
+import albumentations as A
 import numpy as np
 import pandas as pd
+from albumentations.pytorch.transforms import ToTensorV2
 from evidently.metrics import DataDriftTable
 from evidently.report import Report
-from torchvision import transforms
-from pathlib import Path
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
-import sys
 from evidently.test_suite import TestSuite
 from evidently.tests import (
+    TestDataDrift,
+    TestDataQuality,
     TestMissingValues,
+    TestNumericDistribution,
     TestNumericMetric,
     TestValueCount,
-    TestNumericDistribution,
-    TestDataDrift,
-    TestDataQuality
 )
+from torchvision import transforms
 
 """
 Task: Deploy a drift detection API to the cloud (M27)
@@ -24,11 +25,12 @@ Task: Deploy a drift detection API to the cloud (M27)
 
 from data import StarfishDataset
 
-image_transforms = A.Compose([
-            A.Resize(640, 640),
-        ], 
-        bbox_params=A.BboxParams(format='pascal_voc', min_visibility=0., label_fields=['labels'])
-    )
+image_transforms = A.Compose(
+    [
+        A.Resize(640, 640),
+    ],
+    bbox_params=A.BboxParams(format="pascal_voc", min_visibility=0.0, label_fields=["labels"]),
+)
 
 parent_directory = Path(__file__).resolve().parents[2]
 data_path = parent_directory / "data" / "raw"
@@ -43,19 +45,24 @@ def extract_image_features(dataset):
     """
 
     feature_columns = [
-        "Average Brightness R", "Contrast R", "Sharpness R",
-        "Average Brightness G", "Contrast G", "Sharpness G",
-        "Average Brightness B", "Contrast B", "Sharpness B"
+        "Average Brightness R",
+        "Contrast R",
+        "Sharpness R",
+        "Average Brightness G",
+        "Contrast G",
+        "Sharpness G",
+        "Average Brightness B",
+        "Contrast B",
+        "Sharpness B",
     ]
-    
 
     features = []
     for i in range(len(dataset)):
         img, target = dataset[i]
-        
+
         # Ensure img is a numpy array
         img = np.array(img)
-        
+
         new_entry = []
         for channel_idx in range(3):
             channel = img[:, :, channel_idx]
@@ -73,7 +80,7 @@ def extract_image_features(dataset):
             new_entry.append(sharpness)
 
         features.append(new_entry)
-    
+
     # Create DataFrame
     feature_df = pd.DataFrame(features, columns=feature_columns, index=range(len(dataset)))
     return feature_df
@@ -101,7 +108,7 @@ def extract_target_features(dataset):
         # Convert to scalar
         average_size = average_size.item()
         targets.append([average_size, len(boxes)])
-    
+
     # Create DataFrame
     target_df = pd.DataFrame(targets, columns=target_columns, index=range(len(dataset)))
 
@@ -123,13 +130,9 @@ print(target_feature_df.head())
 
 data_integrity_dataset_tests = TestSuite(
     tests=[
-       # Make sure no images have zero bounding boxes
+        # Make sure no images have zero bounding boxes
         TestValueCount(
-            column_name="Number of BBs",
-            values=[0],
-            condition="==",
-            target=0,
-            assertion_type="less_than_or_equal"
+            column_name="Number of BBs", values=[0], condition="==", target=0, assertion_type="less_than_or_equal"
         ),
     ]
 )

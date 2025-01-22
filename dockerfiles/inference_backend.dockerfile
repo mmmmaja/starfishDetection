@@ -40,7 +40,7 @@ CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--worke
 # 3. Go to http://localhost:8080/docs to test the API
 
 # 4. Deploy the the cloud:
-    
+
     # docker tag backend:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
     # docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
 
@@ -71,4 +71,3 @@ CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--worke
 
 # Secret to the WandB API key
 # os.environ["WANDB_API_KEY"]
-    

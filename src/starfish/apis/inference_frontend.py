@@ -1,21 +1,21 @@
-from google.cloud import run_v2
-import streamlit as st
 import os
-import requests
-from inference_backend import process_result
-from requests.exceptions import Timeout, RequestException
-import torch
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
 
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import requests
+import streamlit as st
+import torch
+from google.cloud import run_v2
+from inference_backend import process_result
+from requests.exceptions import RequestException, Timeout
 
 # Constants for the Google Cloud project and region
 PROJECT = "starfish-detection"
 REGION = "us-central1"
 
 
-@st.cache_resource  
+@st.cache_resource
 def get_backend_url():
     """
     Get the URL of the backend service.
@@ -29,7 +29,7 @@ def get_backend_url():
         if service.name.split("/")[-1] == "backend":
             print(f"Backend service found: {service.uri}")
             return service.uri
-        
+
     name = os.environ.get("backend", None)
     return name
 
@@ -52,19 +52,19 @@ def object_detection(image: bytes, backend: str) -> dict:
             error_message = f"Backend returned status code {response.status_code}: {response.text}"
             print(error_message)
             return {"error": error_message}
-        
+
     except Timeout:
         error_message = "The request to the backend timed out. Please try again later."
         print(error_message)
         return {"error": error_message}
-    
+
     except RequestException as e:
         error_message = f"An error occurred while making the request: {str(e)}"
         print(error_message)
         return {"error": error_message}
-    
 
-def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = 'dark') -> plt.Figure:
+
+def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = "dark") -> plt.Figure:
     """
     Plot a histogram of the confidence scores with improved aesthetics and dark mode compatibility.
     :param data: The confidence scores
@@ -72,15 +72,15 @@ def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = '
     :param theme: 'dark' or 'light' theme
     :return: The histogram plot
     """
-    if theme == 'dark':
-        plt.style.use('dark_background')
+    if theme == "dark":
+        plt.style.use("dark_background")
     else:
-        plt.style.use('seaborn-whitegrid')
+        plt.style.use("seaborn-whitegrid")
 
-    fig, ax = plt.subplots(figsize=(8, 4), facecolor='none')
+    fig, ax = plt.subplots(figsize=(8, 4), facecolor="none")
 
     # Create the histogram
-    n, bins, patches = ax.hist(data, bins=bins, edgecolor='white', alpha=0.7, linewidth=0.7)
+    n, bins, patches = ax.hist(data, bins=bins, edgecolor="white", alpha=0.7, linewidth=0.7)
 
     # Normalize bin counts for color mapping
     norm = plt.Normalize(min(n), max(n))
@@ -92,23 +92,23 @@ def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = '
         patch.set_facecolor(color)
 
     # Set title and labels with appropriate colors
-    title_color = 'white' if theme == 'dark' else 'black'
-    label_color = 'white' if theme == 'dark' else 'black'
+    title_color = "white" if theme == "dark" else "black"
+    label_color = "white" if theme == "dark" else "black"
 
-    ax.set_title('Confidence Scores Distribution', color=title_color, fontsize=16, pad=15)
-    ax.set_xlabel('Confidence Score', color=label_color, fontsize=12, labelpad=10)
-    ax.set_ylabel('Frequency', color=label_color, fontsize=12, labelpad=10)
+    ax.set_title("Confidence Scores Distribution", color=title_color, fontsize=16, pad=15)
+    ax.set_xlabel("Confidence Score", color=label_color, fontsize=12, labelpad=10)
+    ax.set_ylabel("Frequency", color=label_color, fontsize=12, labelpad=10)
 
     # Customize tick parameters
-    ax.tick_params(axis='x', colors=label_color, labelsize=10)
-    ax.tick_params(axis='y', colors=label_color, labelsize=10)
+    ax.tick_params(axis="x", colors=label_color, labelsize=10)
+    ax.tick_params(axis="y", colors=label_color, labelsize=10)
 
     # Customize spines
     for spine in ax.spines.values():
         spine.set_edgecolor(label_color)
 
     # Add gridlines for better readability
-    ax.grid(True, which='both', linestyle='--', linewidth=0.5, color='gray', alpha=0.3)
+    ax.grid(True, which="both", linestyle="--", linewidth=0.5, color="gray", alpha=0.3)
 
     return fig
 
@@ -125,14 +125,14 @@ def main() -> None:
     # Theme selection (optional enhancement)
     theme = st.sidebar.radio("Select Theme", options=["Dark", "Light"], index=0)
 
-     # Slider to adjust IoU threshold
+    # Slider to adjust IoU threshold
     iou_threshold = st.sidebar.slider(
         "IoU Threshold for NMS",
-        min_value=0.,
-        max_value=1.,
+        min_value=0.0,
+        max_value=1.0,
         value=0.5,
         step=0.05,
-        help="Adjust the Intersection over Union (IoU) threshold for Non-Maximum Suppression."
+        help="Adjust the Intersection over Union (IoU) threshold for Non-Maximum Suppression.",
     )
 
     # Connect to the backend service
@@ -141,7 +141,7 @@ def main() -> None:
         msg = "Backend service not found"
         st.error(msg)
         return
-    
+
     # Prompt the user to upload an image
     st.title("Starfish Detection")
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
@@ -155,7 +155,6 @@ def main() -> None:
             result = object_detection(image, backend=backend)
 
         if result is not None:
-
             if "error" in result:
                 st.error(result["error"])
             else:
@@ -172,9 +171,9 @@ def main() -> None:
                 # show the image and prediction
                 st.image(processed_image, caption="Detected Starfish", width=500, channels="BGR")
 
-                # Make a histogram of the scores                
+                # Make a histogram of the scores
                 # Create the plot
-                fig = plot_confidence_histogram(result['scores'], theme=theme.lower())
+                fig = plot_confidence_histogram(result["scores"], theme=theme.lower())
                 # Show the plot
                 st.pyplot(fig)
 

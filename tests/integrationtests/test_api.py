@@ -1,11 +1,12 @@
-from fastapi.testclient import TestClient
 from app.main import app
+from fastapi.testclient import TestClient
 
 """
 Test APIs written in FastAPI
 """
 
 client = TestClient(app)
+
 
 def test_inference(model):
     """
