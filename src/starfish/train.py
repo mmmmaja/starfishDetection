@@ -11,8 +11,6 @@ from loguru import logger as log
 from omegaconf import DictConfig
 from torch.profiler import ProfilerActivity, profile, tensorboard_trace_handler
 
-import wandb
-
 # Ensure reproducibility by setting seeds for random number generation
 torch.manual_seed(0)
 np.random.seed(0)
@@ -58,11 +56,6 @@ def train(cfg: DictConfig):
     # 5. Test the model
     log.info("\nTesting the model...")
     trainer.test(model, data_module)
-
-    # 6. Save the model
-    log.info("\nSaving the model...")
-    state_dict = model.state_dict()
-    torch.save(state_dict, "model.pth")
 
 
 if __name__ == "__main__":
