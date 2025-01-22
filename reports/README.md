@@ -143,7 +143,7 @@ will check the repositories and the code to verify your answers.
 >
 > Answer:
 
-We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as color distortion, Gaussian blur, motion blur, and random fog to the images. These augmentations were applied with our underwater video setting in mind to prevent overfitting and improve the model's generalization capabilities.
+We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as random rotations, flips, scaling, and color adjustments to the images. These augmentations were applied to prevent overfitting and improve the model's generalization capabilities.
 
 ## Coding environment
 
@@ -394,8 +394,8 @@ torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can
 >
 > Answer:
 
---- question 16 fill here ---
-
+We used pdb at one point and another point used gihub history to find that the optimizer accidentaly was changed to ADAM.
+Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97% when profiling a two batches. The following slowest are all internal model function calls like aten::conv2d and we have to go very far down get to any code we have touched which is the dataloader. In general we found that the fasterrcnn_resnet50_fpn contrary to its name was really slow and when trying to run in with mps as gpu the runtime increased by orders of magnitude. I think that this is because some backend pytorch function aren't ported to mps yet which results in alot of moving data between cpu and gpu.
 
 ## Working in the cloud
 
