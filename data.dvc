@@ -3,4 +3,4 @@ outs:
   size: 15225448315
   nfiles: 23511
   hash: md5
-  path: starfish-detection-data
+  path: data
