@@ -118,7 +118,7 @@ class FasterRCNNLightning(pl.LightningModule):
         """
         optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())  # initializes the optimizer
         print("learning rate", optimizer.param_groups[0]["lr"])
-        print("weight decay", optimizer.param_groups[0]["weight_decay"])
+        print("momentum", optimizer.param_groups[0]["momentum"])
 
         if self.hparams.scheduler is not None:
             scheduler = self.hparams.scheduler(optimizer=optimizer)  # initializes the scheduler
