@@ -40,12 +40,39 @@ CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--worke
 # 3. Go to http://localhost:8080/docs to test the API
 
 # 4. Deploy the the cloud:
-    
+
     # docker tag backend:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
     # docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
 
     # Verify the images in the artifact registry
     # gcloud artifacts docker images list us-central1-docker.pkg.dev/starfish-detection/frontend-backend
 
+<<<<<<< HEAD
     # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080
     
+=======
+    # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --set-secrets=WANDB_API_KEY=WANDB_API_KEY:latest --port=8080
+    # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/cloud_backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080
+
+
+
+# docker tag \
+#     backend:latest \
+#     us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
+# docker push \
+# #     us-central1.pkg.dev/starfish-detection/frontend-backend/backend:latest
+# gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --update-secrets=WANDB_API_KEY=wandb-api-key:latest
+
+# gcloud artifacts repositories create frontend-backend --repository-format=docker --location=us-central1 --description="Docker repository for frontend and backend services"
+
+# export MYENDPOINT=$(gcloud run services describe backend --region=us-central1 --format="value(status.url)")
+# curl -X 'POST' \
+#     $MYENDPOINT/inference \
+#     -H 'accept: application/json' \
+#     -H 'Content-Type: multipart/form-data' \
+#     -F 'file=@C:\\Users\\mjgoj\\Desktop\\starfishDetection\\data\\raw\\train_images\\video_0\0.jpg;type=image/jpeg'
+
+
+# Secret to the WandB API key
+# os.environ["WANDB_API_KEY"]
+>>>>>>> ef6ac71653d89c0e93b24e1cd9767f49f082e8ee

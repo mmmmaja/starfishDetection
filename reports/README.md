@@ -57,7 +57,7 @@ will check the repositories and the code to verify your answers.
 * [X] Remember to fill out the `requirements.txt` and `requirements_dev.txt` file with whatever dependencies that you
     are using (M2+M6)
 * [ ] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
-* [ ] Do a bit of code typing and remember to document essential parts of your code (M7)
+* [X] Do a bit of code typing and remember to document essential parts of your code (M7)
 * [X] Setup version control for your data or part of your data (M8)
 * [X] Add command line interfaces and project commands to your code where it makes sense (M9)
 * [X] Construct one or multiple docker files for your code (M10)
@@ -163,7 +163,7 @@ We used the third-party image augmentation library, [Albumentations](https://git
 >
 > Answer:
 
---- question 4 fill here ---
+We managed dependencies in our project by using requirements files. Whenever we needed a new package we added it to the file and used `pip show PACKAGE` to get the package version, which we then added to the requirements file. When developing locally we created a Conda environment wherein we installed all the packages in the requirements files, and when developing on the Cloud we installed the packages directly into a Docker container. The `Documentation` section of the main README contains instructions on reproducing our environment exactly under the `Environment` subsection. The process involves creating a new Conda environment with a specific Python version and then installing the packages in the requirements files.
 
 ### Question 5
 
@@ -229,7 +229,7 @@ and for the FasterRCNNLightning model and the FasterRCNNLightning module in test
 
 We have also implemented integration test for the API and the utility functions.
 
-we currently don't test the train.py script as its mostly just instanciating the modules and running them.
+we currently don't test the train.py script as its mostly just instantiating the modules and running them.
 
 
 ### Question 8
@@ -260,7 +260,9 @@ we currently don't test the train.py script as its mostly just instanciating the
 >
 > Answer:
 
---- question 9 fill here ---
+Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch.
+
+Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities.
 
 ### Question 10
 
@@ -292,7 +294,7 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
---- question 11 fill here ---
+Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581](Check pre-commit example action workflow) shows one of our GitHub actions workflows.
 
 ## Running code and tracking experiments
 
@@ -311,12 +313,12 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
-As mentioned in question 5 we use hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use hydra from the terminal like
+As mentioned in question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
 
 ```bash
 train data.batch_size=128
 ```
-or write a experiment config with several overrides like with our train_local.yaml which we can run with
+or write an experiment config with several overrides like with our train_local.yaml which we can run with
 
 ```bash
 train +experiment=train_local
@@ -335,7 +337,17 @@ train +experiment=train_local
 >
 > Answer:
 
---- question 13 fill here ---
+We did several things to ensure reproducibility. First, all parameters and hyperparameters are saved on Wandb whenever an experiment is run. In addition, we have these lines in `trainer.py` to ensure that random number generation does not impact reproducibility.
+
+```
+torch.manual_seed(0)
+np.random.seed(0)
+random.seed(0)
+
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # sets CuBLAS workspace configuration for deterministic behavior
+torch.backends.cudnn.deterministic = True  # ensures that the CUDA backend produces deterministic results
+torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can introduce non-deterministic behavior
+```
 
 ### Question 14
 
@@ -383,7 +395,7 @@ train +experiment=train_local
 > Answer:
 
 --- question 16 fill here ---
-Optimizer.step#Adam.step took the most CPU time in profiling
+
 
 ## Working in the cloud
 
@@ -401,9 +413,10 @@ Optimizer.step#Adam.step took the most CPU time in profiling
 > Answer:
 
 --- question 17 fill here ---
-Bucket is used to store
-Vertex AI
-Secret
+Bucket is used to store objects such as data or models. We created a bucket for our data in GCP and another one for the model we deploy.
+Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
+Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.
+CLOUD RUN ADD HERE
 
 ### Question 18
 
@@ -477,7 +490,13 @@ Secret
 >
 > Answer:
 
---- question 23 fill here ---
+We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API features two main endpoints:
+1. `\inference\` endpoint:
+   When a user uploads an image the API loads the model, executes predictions to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
+2. `\show\` endpoint:
+    Instead of returning raw predictions, this endpoint overlays the predicted bounding boxes and confidence scores directly onto the submitted image. Through this endpoint we were able to visually inspect model's detections and is especially useful for testing.
+
+Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
 
 ### Question 24
 
@@ -590,6 +609,7 @@ Secret
 > Answer:
 
 --- question 30 fill here ---
+Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
 
 ### Question 31
 

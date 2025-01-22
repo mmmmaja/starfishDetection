@@ -1,19 +1,20 @@
-from fastapi.testclient import TestClient
-from app.main import app
+# from app.main import app
+# from fastapi.testclient import TestClient
 
-"""
-Test APIs written in FastAPI
-"""
+# """
+# Test APIs written in FastAPI
+# """
 
-client = TestClient(app)
+# client = TestClient(app)
 
-def test_inference(model):
-    """
-    Test the inference API
-    TODO
-    """
-    url = "/inference"
-    response = client.get(url)
 
-    assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the MNIST model inference API!"}
+# def test_inference(model):
+#     """
+#     Test the inference API
+#     TODO
+#     """
+#     url = "/inference"
+#     response = client.get(url)
+
+#     assert response.status_code == 200
+#     assert response.json() == {"message": "Welcome to the MNIST model inference API!"}

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import hydra
 import numpy as np
+import omegaconf
 import torch
 from hydra.utils import instantiate
 from loguru import logger as log
@@ -38,6 +39,9 @@ def train(cfg: DictConfig):
     model = instantiate(cfg.model)
     logger = instantiate(cfg.logger)
 
+    # Log the hyperparameters
+    logger.log_hyperparams(cfg)
+
     # 3. Instantiate the trainer
     trainer = instantiate(cfg.trainer, logger=logger)  # callbacks=[early_stopping], logger=True)
 
@@ -52,11 +56,6 @@ def train(cfg: DictConfig):
     # 5. Test the model
     log.info("\nTesting the model...")
     trainer.test(model, data_module)
-
-    # 6. Save the model
-    log.info("\nSaving the model...")
-    state_dict = model.state_dict()
-    torch.save(state_dict, "model.pth")
 
 
 if __name__ == "__main__":
