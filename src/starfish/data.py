@@ -180,9 +180,8 @@ def create_dataset(data_path, subset=1.0):
 
 
 class StarfishDataModule(pl.LightningDataModule):
-    """ Data module for the starfish detection dataset.
-    
-    """
+    """Data module for the starfish detection dataset."""
+
     def __init__(
         self,
         data_from_bucket: bool = True,

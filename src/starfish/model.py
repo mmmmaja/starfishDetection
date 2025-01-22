@@ -9,10 +9,11 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
 
 class FasterRCNNLightning(pl.LightningModule):
-    """ 
+    """
     Lightning module for the Faster R-CNN model for starfish detection
 
     """
+
     def __init__(
         self,
         num_classes: int = 2,
