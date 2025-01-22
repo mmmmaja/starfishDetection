@@ -26,7 +26,7 @@ data:
 trainer:
   min_epochs: 1
   max_epochs: 1
-  accelerator: gpu
+  accelerator: cpu
   limit_train_batches: 2
   limit_val_batches: 2
   limit_test_batches: 2
@@ -34,4 +34,4 @@ trainer:
 model:
   optimizer:
     lr: 0.002
-  compile: True
+  compile: False

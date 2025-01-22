@@ -180,6 +180,9 @@ def create_dataset(data_path, subset=1.0):
 
 
 class StarfishDataModule(pl.LightningDataModule):
+    """ Data module for the starfish detection dataset.
+    
+    """
     def __init__(
         self,
         data_from_bucket: bool = True,
@@ -189,6 +192,16 @@ class StarfishDataModule(pl.LightningDataModule):
         num_workers: int = 1,
     ) -> None:
         super().__init__()
+        """
+        Initialize the data module.
+
+        :param data_from_bucket: Whether to load the data from the bucket
+        :param batch_size: The batch size
+        :param train_val_test_split: The split of the data into training, validation, and test sets
+        :param subset: The fraction of the data to load
+        :param num_workers: The number of workers to use for loading the data
+        """
+
         self.data_path = (
             "/gcs/starfish-detection-data/data/raw" if data_from_bucket else "starfish-detection-data/data/raw"
         )
@@ -210,6 +223,7 @@ class StarfishDataModule(pl.LightningDataModule):
 
     def preprocess_data(self) -> None:
         """Process raw data and save it to the processed directory."""
+        pass
 
     def setup(self, stage: str = None) -> None:
         """Load and prepare datasets."""
@@ -223,6 +237,10 @@ class StarfishDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self) -> DataLoader:
+        """Create and return the train dataloader.
+
+        :return: The train dataloader.
+        """
         return DataLoader(
             self.data_train,
             batch_size=self.batch_size,
@@ -232,6 +250,10 @@ class StarfishDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self) -> DataLoader:
+        """Create and return the validation dataloader.
+
+        :return: The validation dataloader.
+        """
         return DataLoader(
             self.data_val,
             batch_size=self.batch_size,
@@ -241,6 +263,10 @@ class StarfishDataModule(pl.LightningDataModule):
         )
 
     def test_dataloader(self) -> DataLoader:
+        """Create and return the test dataloader.
+
+        :return: The test dataloader.
+        """
         return DataLoader(
             self.data_test,
             batch_size=self.batch_size,
@@ -250,16 +276,16 @@ class StarfishDataModule(pl.LightningDataModule):
         )
 
 
-if __name__ == "__main__":
-    # Get the main directory of the project
-    parent_directory = Path(__file__).resolve().parents[2]
-    data_path = parent_directory / "starfish-detection-data" / "data" / "raw"
+# if __name__ == "__main__":
+#     # Get the main directory of the project
+#     parent_directory = Path(__file__).resolve().parents[2]
+#     data_path = parent_directory / "starfish-detection-data" / "data" / "raw"
 
-    # For now the data does not require any preprocessing
-    # Otherwise, uncomment the following line to preprocess the data
-    # typer.run(preprocess)
+#     # For now the data does not require any preprocessing
+#     # Otherwise, uncomment the following line to preprocess the data
+#     # typer.run(preprocess)
 
-    # Create the dataset and plot a sample
-    dataset = create_dataset(data_path, subset=0.001)  # Adjust subset as needed
-    for i in range(5):
-        dataset.plot_sample(i)
+#     # Create the dataset and plot a sample
+#     dataset = create_dataset(data_path, subset=0.001)  # Adjust subset as needed
+#     for i in range(5):
+#         dataset.plot_sample(i)

@@ -9,6 +9,10 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
 
 class FasterRCNNLightning(pl.LightningModule):
+    """ 
+    Lightning module for the Faster R-CNN model for starfish detection
+
+    """
     def __init__(
         self,
         num_classes: int = 2,
@@ -16,8 +20,15 @@ class FasterRCNNLightning(pl.LightningModule):
         scheduler: torch.optim.lr_scheduler = torch.optim.lr_scheduler.StepLR,
         compile: bool = False,
         log_ap: bool = False,
-    ):
+    ) -> None:
         super().__init__()
+        """ Initializes the Faster R-CNN model lightning module
+        :param num_classes: Number of classes
+        :param optimizer: Optimizer
+        :param scheduler: Learning rate scheduler
+        :param compile: Whether to compile the model
+        :param log_ap: Whether to log the average precision
+        """
         self.save_hyperparameters()  # saves the hyperparameters to the checkpoint
         self.model = fasterrcnn_resnet50_fpn(weights="DEFAULT")  # loads the pretrained model
 
@@ -36,11 +47,13 @@ class FasterRCNNLightning(pl.LightningModule):
 
         torch.set_float32_matmul_precision("high")  # sets the precision to high
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx) -> torch.Tensor:
         """
         Training step
         :param batch: Tuple containing images and targets
         :param batch_idx: Index of the batch
+
+        :return: Total loss
         """
         images, targets = batch
         loss_dict = self.model(images, targets)  # forward pass with targets
@@ -115,6 +128,7 @@ class FasterRCNNLightning(pl.LightningModule):
     def configure_optimizers(self) -> Dict[str, Any]:
         """
         Configure the optimizer and learning rate scheduler
+        :return: Dictionary containing the optimizer and learning rate scheduler
         """
         optimizer = self.hparams.optimizer(params=self.trainer.model.parameters())  # initializes the optimizer
         print("learning rate", optimizer.param_groups[0]["lr"])
