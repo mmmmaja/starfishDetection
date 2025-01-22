@@ -85,7 +85,7 @@ invoke download-data
 ```
 
 ### Train
-Train with CPU
+Train with default arguments
 ```bash
 train
 ```
@@ -93,10 +93,7 @@ Train with data downloaded from the bucket rather than accessing it directly fro
 ```bash
 train data.data_from_bucket=false
 ```
-Train with GPU
-```bash
-train trainer.accelerator=gpu
-```
+
 
 ### Profiling
 Train with profiling
