@@ -65,7 +65,7 @@ class FasterRCNNLightning(pl.LightningModule):
 
         return total_loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx) -> None:
         """
         Validation step
         :param batch: Tuple containing images and targets
@@ -85,7 +85,7 @@ class FasterRCNNLightning(pl.LightningModule):
         total_loss = sum(loss for loss in loss_dict.values())  # sum of all losses
         self.log("val_total_loss", total_loss, prog_bar=True)  # logs the total loss
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch, batch_idx) -> None:
         """
         Test step
         :param batch: Tuple containing images and targets
@@ -102,6 +102,14 @@ class FasterRCNNLightning(pl.LightningModule):
         self.log_dict(
             {f"test_{k}": v for k, v in self.test_iou_metric.compute().items()}, prog_bar=True
         )  # logs the IoU
+
+    def setup(self, stage: str) -> None:
+        """
+        Setup the model
+        :param stage: Stage of training
+        """
+        if self.hparams.compile and stage == "fit":
+            self.net = torch.compile(self.model)
 
     def configure_optimizers(self) -> Dict[str, Any]:
         """
