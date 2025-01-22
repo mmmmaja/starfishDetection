@@ -100,7 +100,7 @@ will check the repositories and the code to verify your answers.
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [X] If applicable, optimize the performance of your data loading using distributed data loading (M29)
 * [X] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
-* [ ] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
+* [X] Play around with quantization, compilation and pruning for you trained models to increase inference speed (M31)
 
 ### Extra
 
@@ -179,7 +179,18 @@ We used the third-party image augmentation library, [Albumentations](https://git
 >
 > Answer:
 
---- question 5 fill here ---
+We use hydra for config files and make use the instanciate function for the main 4 objects: the pytorch lightning module, data module and trainer and the wandb logger
+code:
+- Code for the pytorch lightning module is in src/starfish/model.py
+- Code for the pytorch lightning data module is in src/starfish/data.py
+configs:
+- Config for the pytorch lightning module is in config/model/default_model.yaml
+- Config for the pytorch lightning data module is in config/data/default_data_module.yaml
+- Config for the pytorch lightning trainer is in config/trainer/default_trainer.yaml
+- Config for the wandb logger is in config/logger/wandb_logger.yaml
+
+we make use of the experiments configs to make overides to the default config fx. with the train_local.yaml  for changing the data directory from a bucket to local data and limiting the train val and test batches.
+
 
 ### Question 6
 
@@ -213,7 +224,11 @@ We used the third-party image augmentation library, [Albumentations](https://git
 >
 > Answer:
 
---- question 7 fill here ---
+We have implemented tests for the data in tests/unittests/test_data.py which cover the StarfishDataset and the StarfishDataModule
+and for the FasterRCNNLightning model and the FasterRCNNLightning module in tests/unittests/test_model.py
+
+We have also implemented integration test for the API and the utility functions.
+
 
 ### Question 8
 
