@@ -1,21 +1,14 @@
 # from google.cloud import run_v2
 import streamlit as st
-import requests
 from requests.exceptions import Timeout, RequestException
 import torch
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-
-import cv2
-import matplotlib.pyplot as plt
-import numpy as np
-import requests
-import streamlit as st
-import torch
-from google.cloud import run_v2
-from inference_backend import process_result
 from requests.exceptions import RequestException, Timeout
+import requests
+import numpy as np
+import matplotlib.pyplot as plt
+import cv2
+import torch
+import torchvision
 
 # Constants for the Google Cloud project and region
 PROJECT = "starfish-detection"
@@ -227,7 +220,7 @@ def main() -> None:
 
     if uploaded_file is not None:
         image = uploaded_file.read()
-        st.image(image, caption="Uploaded Image", width=500, channels="BGR")
+        st.image(image, caption="Uploaded Image", width=800, channels="BGR")
 
         with st.spinner("Detecting starfish..."):
             # Convert image to numpy array

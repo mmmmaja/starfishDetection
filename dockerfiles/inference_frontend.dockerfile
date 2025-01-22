@@ -12,9 +12,9 @@ RUN apt update && \
 
 
 COPY src/starfish/apis/inference_frontend.py inference_frontend.py
-COPY requirements_frontend_inference.txt requirements_frontend_inference.txt
+COPY requirements.txt requirements.txt
 
-RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements_frontend_inference.txt
+RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
 ENV PORT=8080
 
 EXPOSE $PORT

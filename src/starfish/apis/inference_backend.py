@@ -193,16 +193,16 @@ async def inference(data: UploadFile = File(...)) -> dict:
     # Add a batch dimension
     batch = image_processed.unsqueeze(0)
 
-    try:
-        # Perform inference
-        with torch.no_grad():
-            model.eval()
-            # Prediction is the bounding boxes and the scores
-            prediction = model(batch.to(device))
-            print(prediction)
-            return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
-    except Exception as e:
-        raise HTTPException(status_code=500) from e
+    # try:
+    # Perform inference
+    with torch.no_grad():
+        model.eval()
+        # Prediction is the bounding boxes and the scores
+        prediction = model.model(batch.to(device))
+        print(prediction)
+        return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
+    # except Exception as e:
+    #     raise HTTPException(status_code=500) from e
 
 
 
