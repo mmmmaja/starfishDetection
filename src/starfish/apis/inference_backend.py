@@ -14,20 +14,16 @@ import cv2
 from fastapi.responses import FileResponse
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
-import wandb
 import torchvision
+import numpy as np
 
 
+# Run this command to set the environment variable:
 # set RUNNING_LOCALLY=True
 
 # Determine the running environment
 RUNNING_LOCALLY = os.getenv("RUNNING_LOCALLY", "False").lower() in ("true", "1", "t")
 print(f"Running locally: {RUNNING_LOCALLY}")
-
-
-# entity = "luciagordon-harvard-university"
-# project = "starfishDetection-src_starfish" q
-ARTIFACT_PATH = "luciagordon-harvard-university/Starfish Detection/model-z6xxz6rn:v0"
 
 
 """
@@ -43,34 +39,20 @@ async def lifespan(app: FastAPI):
     """
     global model, device
 
-    # Initialize W&B API only if not running locally
-    if not RUNNING_LOCALLY:
 
-        # Initialize W&B using environment variable
-        key = os.getenv("WANDB_API_KEY")
-        if not key:
-            raise HTTPException(status_code=500, detail="W&B API key not found in environment variables.")
-        else:
-            print("Logging in with W&B API key...")
-            wandb.login(key=key)
+    if not RUNNING_LOCALLY:
+        # Use the model path in the Google Cloud Storage
+        model_path = "gs://starfish-model/model.ckpt"
+        
     else:
-        wandb.login()
+        # Use public model path
+        model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
 
     try:
-        # Initialize W&B API
-        api = wandb.Api()
-
-        # Get the artifact
-        artifact = api.artifact(ARTIFACT_PATH, type="model")
-        artifact_dir = artifact.download()  # Downloads to a directory and returns the path
-
-        model_path = os.path.join(artifact_dir, "model.ckpt")
-
         # Load the model
         model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to load model from W&B: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
         
     # Configure the device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -86,7 +68,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 
-def preprocess_image(image):
+def preprocess_image(image: np.ndarray) -> torch.Tensor:
     """
     Preprocess the image before passing it to the model
     :param image: The input image
@@ -105,20 +87,26 @@ def preprocess_image(image):
     return transform(image=image)["image"]
 
 
-def process_result(prediction, image):
+def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float=0.02) -> np.ndarray:
+    """
+    Process the prediction and draw the bounding boxes on the image
+    :param prediction: The prediction from the model
+    :param image: The input image
+    :param NMS_threshold: The threshold for Non-Maximum Suppression
+    :return: The image with the bounding boxes drawn on it
+    """
+
     # Extract the scores and boxes from the prediction
     scores = prediction['scores']
     boxes = prediction['boxes']
 
-    keep_scores, keep_boxes = NMS(scores, boxes)
+    keep_scores, keep_boxes = NMS(scores, boxes, iou_threshold=NMS_threshold)
     print(f'Before NMS: {len(scores)} After NMS: {len(keep_scores)}')
 
-    # Draw the bounding boxes on the image
-    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     # Resize the image
     image = cv2.resize(image, (640, 640))
 
+    # Draw the bounding boxes on the image
     boxes_data = []
     for i, box in enumerate(keep_boxes):
         
@@ -140,11 +128,12 @@ def process_result(prediction, image):
 
 
 
-def NMS(scores, boxes, iou_threshold=0.5):
+def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float=0.02) -> tuple:
     """
     Non-Maximum Suppression
     :param scores: Tensor of shape (N,) containing the confidence scores
     :param boxes: Tensor of shape (N, 4) containing the predicted boxes
+    :param iou_threshold: The threshold for IoU (Intersection over Union)
     """
 
     # 1. Sort the predictions by confidence scores
@@ -180,10 +169,11 @@ async def root():
 @app.post("/inference/")
 # async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
 # while waiting for I/O operations (like reading a file) to complete.
-async def inference(data: UploadFile = File(...)):
+async def inference(data: UploadFile = File(...)) -> dict:
     """
     Perform inference on the uploaded image.
     :param data: The uploaded image file
+    :return: The prediction from the model
     """
 
     # Read the image once it was uploaded
@@ -221,7 +211,14 @@ async def inference(data: UploadFile = File(...)):
 @app.post("/show/")
 # async def: Defines an asynchronous function, allowing FastAPI to handle other requests 
 # while waiting for I/O operations (like reading a file) to complete.
-async def show(data: UploadFile = File(...)):
+async def show(data: UploadFile = File(...)) -> FileResponse:
+    """
+    Perform inference on the uploaded image and display the result.
+    This is a method used for visual inspection of the model outputs
+    :param data: The uploaded image file
+    :return: The image with the bounding boxes drawn on it
+    """
+
     with open('image.jpg', 'wb') as image:
         content = await data.read()
         image.write(content)
@@ -245,11 +242,5 @@ async def show(data: UploadFile = File(...)):
     return FileResponse("output.jpg")
 
 
-# TODO: Tasks   
-# Deploy a drift detection API to the cloud (M27)
-# Instrument the API with a couple of system metrics (M28)
-# For instance: The number of requests per minute.
-
-
-# to run locally:
+# to run this file locally:
 # uvicorn inference_backend:app --reload
