@@ -311,7 +311,16 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
---- question 12 fill here ---
+As mentioned in question 5 we use hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use hydra from the terminal like 
+
+```bash
+train data.batch_size=128
+``` 
+or write a experiment config with several overrides like with our train_local.yaml which we can run with 
+
+```bash
+train +experiment=train_local
+``` 
 
 ### Question 13
 
