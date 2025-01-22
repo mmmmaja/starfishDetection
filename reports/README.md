@@ -229,6 +229,8 @@ and for the FasterRCNNLightning model and the FasterRCNNLightning module in test
 
 We have also implemented integration test for the API and the utility functions.
 
+we currently don't test the train.py script as its mostly just instanciating the modules and running them.
+
 
 ### Question 8
 
