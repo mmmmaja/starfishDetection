@@ -87,7 +87,7 @@ will check the repositories and the code to verify your answers.
 * [X] Create a FastAPI application that can do inference using your model (M22)
 * [X] Deploy your model in GCP using either Functions or Run as the backend (M23)
 * [X] Write API tests for your application and setup continues integration for these (M24)
-* [ ] Load test your application (M24)
+* [X] Load test your application (M24)
 * [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 * [X] Create a frontend for your API (M26)
 
@@ -106,7 +106,7 @@ will check the repositories and the code to verify your answers.
 
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
+* [X] Revisit your initial project description. Did the project turn out as you wanted?
 The project largely turned out as we wanted. The main change we made was to use the FasterRCNN model instead of the YOLO11 model. We made this switch primarily because it did not seem to be straightforward to modify the architecture of YOLO11 to support two classes, whereas this was an input parameter to FasterRCNN.
 * [ ] Create an architectural diagram over your MLOps pipeline
 * [ ] Make sure all group members have an understanding about all parts of the project

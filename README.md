@@ -145,6 +145,10 @@ Run model tests
 ```bash
 invoke test-model
 ```
+Load test
+```bash
+locust -f tests/performancetests/locustfile.py --headless --users 10 --spawn-rate 1 --run-time 1m --host https://backend-638730968773.us-central1.run.app
+```
 
 ### Documentation Site
 Build site locally
