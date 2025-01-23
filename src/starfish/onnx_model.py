@@ -41,7 +41,7 @@ def run_onnx_model(onnx_file_path: str) -> List[np.ndarray]:
     ort_session = rt.InferenceSession(onnx_file_path)
     input_names = [i.name for i in ort_session.get_inputs()]
     output_names = [i.name for i in ort_session.get_outputs()]
-    batch = {input_names[0]: np.random.randn(1, 3, 224, 224).astype(np.float32)}
+    batch = {input_names[0]: np.random.randn(1, 3, 800, 800).astype(np.float32)}
     out = ort_session.run(output_names, batch)
 
     return out
