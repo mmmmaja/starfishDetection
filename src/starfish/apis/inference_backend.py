@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
     global model, onnx_session, device
 
     model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
-    onnx_path = "https://storage.googleapis.com/faster-rcnn-onnx/FasterRCNN.onnx"
+    cloud_onnx_path = "https://storage.googleapis.com/faster-rcnn-onnx/FasterRCNN.onnx"
     local_onnx_path = "FasterRCNN.onnx"
 
     try:
@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
         model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
 
         # Load ONNX model
-        response = requests.get(onnx_path)
+        response = requests.get(cloud_onnx_path)
         with open(local_onnx_path, "wb") as f:
             f.write(response.content)
 
