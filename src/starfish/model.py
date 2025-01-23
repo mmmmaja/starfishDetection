@@ -47,6 +47,14 @@ class FasterRCNNLightning(pl.LightningModule):
 
         torch.set_float32_matmul_precision("high")  # sets the precision to high
 
+    def forward(self, images: torch.Tensor) -> Any:
+        """
+        Forward method for inference
+        :param images: Input images tensor
+        :return: Model predictions
+        """
+        return self.model(images)
+
     def training_step(self, batch, batch_idx) -> torch.Tensor:
         """
         Training step with Wandb image logging and bounding box overlays
