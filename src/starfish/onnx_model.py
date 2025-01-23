@@ -1,4 +1,3 @@
-import os
 from typing import List
 
 import numpy as np
@@ -9,23 +8,18 @@ from model import FasterRCNNLightning
 
 import wandb
 
-DEVICE = torch.device("cpu")
-
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 app = typer.Typer()
-
 app.command()
 
 
 @app.command()
-def export_to_onnx(onnx_file_path: str):
+def export_to_onnx(artifact_name: str, onnx_file_path: str):
     """Export a model to ONNX"""
     wandb.init(project="starfishDetection-src_starfish")
-    artifact_name = "model-thwmyefd:best"
     artifact = wandb.use_artifact(artifact_name, type="model")
     artifact_dir = artifact.download()
     checkpoint_path = f"{artifact_dir}/model.ckpt"
-
-    print(checkpoint_path)
 
     model = FasterRCNNLightning().to(DEVICE)
     model.load_state_dict(torch.load(checkpoint_path, map_location=DEVICE), strict=False)
@@ -34,17 +28,15 @@ def export_to_onnx(onnx_file_path: str):
     dummy_input = torch.randn(1, 3, 800, 800).to(DEVICE)
 
     torch.onnx.export(
-        model,  # The model to export
-        dummy_input,  # The input tensor
-        onnx_file_path,  # Path to save the ONNX file
-        export_params=True,  # Store the trained parameters in the model file
-        opset_version=11,  # ONNX version to use
-        input_names=["input"],  # Input names
-        output_names=["output"],  # Output names
-        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},  # Dynamic shapes
+        model,
+        dummy_input,
+        onnx_file_path,
+        export_params=True,
+        opset_version=11,
+        input_names=["input"],
+        output_names=["output"],
+        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}},
     )
-
-    # onnx_model.save(onnx_file_path)
 
     print(f"Model successfully exported to {onnx_file_path}")
 
