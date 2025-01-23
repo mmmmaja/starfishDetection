@@ -1,15 +1,16 @@
-import wandb
 import torch
 from pytorch_lightning.callbacks import Callback
 from torchmetrics.detection import IntersectionOverUnion
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+import wandb
 
 
 class WandbImageLoggerCallback(Callback):
     def __init__(self, max_predictions=10, log_every_n_steps=100, num_images=4):
         """
         Callback for logging images with bounding boxes to WandB.
-        
+
         :param confidence_threshold: Minimum confidence score for predictions to be logged.
         :param max_predictions: Maximum number of predictions to log per image.
         :param log_every_n_steps: Frequency of logging images (every n steps).
@@ -22,15 +23,13 @@ class WandbImageLoggerCallback(Callback):
         self.train_map_metric = MeanAveragePrecision()
         self.train_iou_metric = IntersectionOverUnion()
 
-
-
     def log_images_with_boxes(self, pl_module, images, predictions, targets):
         """
         Log images with bounding boxes to WandB.
         """
         wandb_images = []
 
-        for img, pred, tgt in zip(images[:self.num_images], predictions, targets):  # Log first num_images images
+        for img, pred, tgt in zip(images[: self.num_images], predictions, targets):  # Log first num_images images
             img_np = img.permute(1, 2, 0).cpu().numpy()  # Convert image to numpy (H, W, C)
 
             # Extract predictions
@@ -39,7 +38,7 @@ class WandbImageLoggerCallback(Callback):
             pred_labels = pred["labels"].cpu().numpy()
 
             # Get top N predictions by confidence
-            top_indices = pred_scores.argsort()[::-1][:self.max_predictions]  # Sort scores descending and take top N
+            top_indices = pred_scores.argsort()[::-1][: self.max_predictions]  # Sort scores descending and take top N
             pred_box_data = [
                 {
                     "position": {
@@ -86,7 +85,7 @@ class WandbImageLoggerCallback(Callback):
 
         # Log to WandB
         if wandb_images:
-            pl_module.logger.experiment.log({"training_images_with_boxes": wandb_images}) #step=pl_module.global_step
+            pl_module.logger.experiment.log({"training_images_with_boxes": wandb_images})  # step=pl_module.global_step
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx=0):
         """
@@ -99,7 +98,7 @@ class WandbImageLoggerCallback(Callback):
 
             with torch.no_grad():  # disables gradient computation
                 predictions = pl_module.model(images)  # forward pass without targets
-            
+
             self.train_map_metric.update(predictions, targets)  # updates the mAP metric
             pl_module.log_dict(
                 {f"train_{k}": v for k, v in self.train_map_metric.compute().items()}, prog_bar=True
@@ -110,10 +109,9 @@ class WandbImageLoggerCallback(Callback):
             )  # logs the IoU
             pl_module.model.train()  # switches back to training mode
 
-        
             self.log_images_with_boxes(pl_module, images, predictions, targets)
 
-        pl_module.model.train() # switches back to training mode
+        pl_module.model.train()  # switches back to training mode
 
     def on_validation_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx=0):
         """
@@ -129,4 +127,3 @@ class WandbImageLoggerCallback(Callback):
         """
         if batch_idx % self.log_every_n_steps == 0:
             self.log_images_with_boxes(pl_module, outputs["images"], outputs["predictions"], outputs["targets"])
-

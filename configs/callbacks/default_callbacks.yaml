@@ -1,5 +1,5 @@
 defaults:
-  # - model_checkpoint 
+  # - model_checkpoint
   # - early_stopping
   - wandb_image_logger
   # - model_summary
@@ -22,4 +22,3 @@ defaults:
 #   max_predictions: 10
 #   log_every_n_steps: 100
 #   num_images: 4
-
