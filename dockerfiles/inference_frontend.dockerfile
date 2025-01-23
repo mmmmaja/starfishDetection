@@ -19,4 +19,5 @@ ENV PORT=8080
 
 EXPOSE $PORT
 
-CMD ["streamlit", "run", "inference_frontend.py", "--bind", "0.0.0.0:8080"]
+# CMD ["streamlit", "run", "inference_frontend.py", "--bind", "0.0.0.0:8080"]
+CMD ["streamlit", "run", "inference_frontend.py", "--server.port", "8080", "--server.address", "0.0.0.0"]
