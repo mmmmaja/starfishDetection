@@ -155,6 +155,6 @@ async def onnx_inference(data: UploadFile = File(...)) -> dict:
         outputs = onnx_session.run(None, {input_name: batch})
         outputs_as_lists = [output.tolist() for output in outputs]
 
-        return {"outputs": outputs_as_lists}
+        return {"output": outputs_as_lists}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ONNX inference failed: {str(e)}")

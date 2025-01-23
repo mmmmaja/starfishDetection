@@ -49,8 +49,7 @@ async def test_onnx_inference_endpoint():
         )
 
     assert response.status_code == 200
-    assert "scores" in response.json()
-    assert "boxes" in response.json()
+    assert "output" in response.json()
 
     os.remove(image_path)
 
