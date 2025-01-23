@@ -7,6 +7,8 @@ from torchmetrics.detection import IntersectionOverUnion
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
+import wandb
+
 
 class FasterRCNNLightning(pl.LightningModule):
     """
@@ -20,7 +22,6 @@ class FasterRCNNLightning(pl.LightningModule):
         optimizer: torch.optim.Optimizer = torch.optim.SGD,
         scheduler: torch.optim.lr_scheduler = torch.optim.lr_scheduler.StepLR,
         compile: bool = False,
-        log_ap: bool = False,
     ) -> None:
         super().__init__()
         """ Initializes the Faster R-CNN model lightning module
@@ -38,9 +39,7 @@ class FasterRCNNLightning(pl.LightningModule):
         self.model.roi_heads.box_predictor = torchvision.models.detection.faster_rcnn.FastRCNNPredictor(
             in_features, num_classes
         )  # replaces the pre-trained head with a new one
-        self.log_ap = log_ap
-        self.train_map_metric = MeanAveragePrecision()
-        self.train_iou_metric = IntersectionOverUnion()
+
         self.val_map_metric = MeanAveragePrecision()
         self.val_iou_metric = IntersectionOverUnion()
         self.test_map_metric = MeanAveragePrecision()
@@ -50,11 +49,7 @@ class FasterRCNNLightning(pl.LightningModule):
 
     def training_step(self, batch, batch_idx) -> torch.Tensor:
         """
-        Training step
-        :param batch: Tuple containing images and targets
-        :param batch_idx: Index of the batch
-
-        :return: Total loss
+        Training step with Wandb image logging and bounding box overlays
         """
         images, targets = batch
         loss_dict = self.model(images, targets)  # forward pass with targets
@@ -62,23 +57,7 @@ class FasterRCNNLightning(pl.LightningModule):
         self.log_dict({f"train_{k}": v for k, v in loss_dict.items()}, prog_bar=True)  # logs all losses
         self.log("train_total_loss", total_loss, prog_bar=True)  # logs the total loss
 
-        if self.log_ap:
-            self.model.eval()  # switches to evaluation mode
-
-            with torch.no_grad():  # disables gradient computation
-                predictions = self.model(images)  # forward pass without targets
-
-            self.train_map_metric.update(predictions, targets)  # updates the mAP metric
-            self.log_dict(
-                {f"train_{k}": v for k, v in self.train_map_metric.compute().items()}, prog_bar=True
-            )  # logs the mAP
-            self.train_iou_metric.update(predictions, targets)  # updates the IoU metric
-            self.log_dict(
-                {f"train_{k}": v for k, v in self.train_iou_metric.compute().items()}, prog_bar=True
-            )  # logs the IoU
-            self.model.train()  # switches back to training mode
-
-        return total_loss
+        return {"loss": total_loss}
 
     def validation_step(self, batch, batch_idx) -> None:
         """
@@ -100,6 +79,13 @@ class FasterRCNNLightning(pl.LightningModule):
         total_loss = sum(loss for loss in loss_dict.values())  # sum of all losses
         self.log("val_total_loss", total_loss, prog_bar=True)  # logs the total loss
 
+        return {
+            "loss": total_loss,
+            "images": images,
+            "predictions": predictions,
+            "targets": targets,
+        }  # return dict with loss, images, predictions and targets to be used in callbacks
+
     def test_step(self, batch, batch_idx) -> None:
         """
         Test step
@@ -117,6 +103,12 @@ class FasterRCNNLightning(pl.LightningModule):
         self.log_dict(
             {f"test_{k}": v for k, v in self.test_iou_metric.compute().items()}, prog_bar=True
         )  # logs the IoU
+
+        return {
+            "images": images,
+            "predictions": predictions,
+            "targets": targets,
+        }  # return dict with images, predictions and targets to be used in callbacks
 
     def setup(self, stage: str) -> None:
         """

@@ -1,0 +1,5 @@
+wandb_image_logger:
+  _target_: starfish.callbacks.WandbImageLoggerCallback
+  max_predictions: 10
+  log_every_n_steps: 100
+  num_images: 4

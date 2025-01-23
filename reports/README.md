@@ -365,7 +365,13 @@ torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can
 >
 > Answer:
 
---- question 14 fill here ---
+We made use of W&B for experiment tracking. The faster R-CNN uses a sum of different losses which we all track and we implemented Mean-Average-Precision (mAP) and Intersection Over Union (IoU) using torchmetrics we end up tracking a total of 39 different metrics.
+However not all the losses from the faster R-CNN seam to be applicaple like map_per_classes as we only have one class so it stays at -1 during all of training.
+We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top n predictions with the highest confidence score.(The images are from the start of training so very little overlap with predictions and targets)
+Logging images with the predictions and targets on allows us to visually see if the model is learning what we want where it can be harder to understand what a mAP of 0.04 compared to a map of 0.01 means.
+Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
+[image_logging](figures/image_logging.png)
+[loss_logging](figures/loss_logging.png)
 
 ### Question 15
 
@@ -413,7 +419,7 @@ Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97%
 >
 > Answer:
 
---- question 17 fill here ---
+
 Bucket is used to store objects such as data or models. We created a bucket for our data in GCP and another one for the model we deploy.
 Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
 Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.

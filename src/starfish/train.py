@@ -42,8 +42,11 @@ def train(cfg: DictConfig):
     # Log the hyperparameters
     logger.log_hyperparams(cfg)
 
+    # callbacks
+    callbacks = [instantiate(cb) for _, cb in cfg.callbacks.items()]
+
     # 3. Instantiate the trainer
-    trainer = instantiate(cfg.trainer, logger=logger)  # callbacks=[early_stopping], logger=True)
+    trainer = instantiate(cfg.trainer, logger=logger, callbacks=callbacks)  # callbacks=[early_stopping], logger=True)
 
     # 4. Train the model
     log.info("\nTraining the model...")
