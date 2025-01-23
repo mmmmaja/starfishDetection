@@ -8,7 +8,7 @@ from model import FasterRCNNLightning
 
 import wandb
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
+DEVICE = torch.device("cpu")
 app = typer.Typer()
 app.command()
 
