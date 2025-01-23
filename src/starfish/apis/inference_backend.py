@@ -75,7 +75,7 @@ def preprocess_image(image: np.ndarray) -> torch.Tensor:
     # Make it of a type double
     image = image.astype("float32")
     transform = A.Compose(
-        [A.Resize(640, 640), ToTensorV2()],
+        [A.Resize(800, 800), ToTensorV2()],
     )
     return transform(image=image)["image"]
 
@@ -127,7 +127,7 @@ async def inference(data: UploadFile = File(...)) -> dict:
 
 
 @app.post("/onnx-inference/")
-async def inference(data: UploadFile = File(...)) -> dict:
+async def onnx_inference(data: UploadFile = File(...)) -> dict:
     """
     Perform inference using the ONNX model.
     :param data: The uploaded image file
@@ -147,14 +147,14 @@ async def inference(data: UploadFile = File(...)) -> dict:
 
     image_processed = preprocess_image(image)
     # Add a batch dimension
-    batch = image_processed.unsqueeze(0)
+    batch = image_processed.unsqueeze(0).numpy()
 
     try:
         # Perform inference
-        with torch.no_grad():
-            # Prediction is the bounding boxes and the scores
-            prediction = onnx_session(batch)
-            print(prediction)
-            return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
+        input_name = onnx_session.get_inputs()[0].name
+        outputs = onnx_session.run(None, {input_name: batch})
+        outputs_as_lists = [output.tolist() for output in outputs]
+
+        return {"outputs": outputs_as_lists}
     except Exception as e:
-        raise HTTPException(status_code=500) from e
+        raise HTTPException(status_code=500, detail=f"ONNX inference failed: {str(e)}")
