@@ -11,6 +11,7 @@ from requests.exceptions import RequestException, Timeout
 PROJECT = "starfish-detection"
 REGION = "us-central1"
 
+
 def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float = 0.02) -> tuple:
     """
     Non-Maximum Suppression
@@ -39,7 +40,6 @@ def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float = 0.02) 
     keep_boxes = boxes[keep_indices]
     keep_scores = scores[keep_indices]
     return keep_scores, keep_boxes
-
 
 
 def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0.02) -> np.ndarray:
@@ -83,7 +83,6 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0
         )
 
     return image
-
 
 
 def object_detection(image: bytes, backend: str) -> dict:

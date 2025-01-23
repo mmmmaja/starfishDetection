@@ -6,6 +6,7 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
 from contextlib import asynccontextmanager
+
 import albumentations as A
 import cv2
 import numpy as np
@@ -14,7 +15,6 @@ from albumentations.pytorch.transforms import ToTensorV2
 from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
 from model import FasterRCNNLightning
-
 
 """
 Create a FastAPI application that can do inference using the model (M22)
