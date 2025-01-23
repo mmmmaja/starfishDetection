@@ -1,0 +1,25 @@
+defaults:
+  # - model_checkpoint 
+  # - early_stopping
+  - wandb_image_logger
+  # - model_summary
+  # - rich_progress_bar
+  # - save_test_inference_to_dict
+  # - metric_logger
+  # - _self_ # this is needed to override the defaults in the parent config
+
+# model_checkpoint:
+#   dirpath: ${hydra:runtime.cwd}/checkpoints
+#   filename: "epoch_{epoch:03d}"
+#   monitor: "train/accuracy"
+#   mode: "max"
+#   save_last: True
+#   auto_insert_metric_name: False
+
+# wandb_image_logger:
+#   _target_: starfish.callbacks.WandbImageLogger
+#   confidence_threshold: 0.62
+#   max_predictions: 10
+#   log_every_n_steps: 100
+#   num_images: 4
+
