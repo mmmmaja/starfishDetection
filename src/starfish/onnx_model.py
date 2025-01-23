@@ -6,15 +6,13 @@ import torch
 import typer
 from model import FasterRCNNLightning
 
-import wandb
-
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 app = typer.Typer()
 app.command()
 
 
 @app.command()
-def export_to_onnx(artifact_name: str, onnx_file_path: str):
+def export_to_onnx(onnx_file_path: str):
     """Export a model to ONNX"""
     model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
     model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
@@ -24,7 +22,7 @@ def export_to_onnx(artifact_name: str, onnx_file_path: str):
     dummy_input = torch.randn(1, 3, 800, 800).to(DEVICE)
 
     torch.onnx.export(
-        model,
+        model.model,
         dummy_input,
         onnx_file_path,
         export_params=True,
