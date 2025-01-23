@@ -46,8 +46,8 @@ async def lifespan(app: FastAPI):
     #     model_path = "/gcs/starfish-model/model.ckpt"
     # else:
     # Use public model path
-    model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
-
+    #    model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
+    model_path = "/gcs/starfish-model/model.ckpt"
     try:
         # Load the model
         model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
