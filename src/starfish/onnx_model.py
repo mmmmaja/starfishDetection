@@ -12,7 +12,7 @@ app.command()
 
 
 @app.command()
-def export_to_onnx(onnx_file_path: str):
+def export_to_onnx(onnx_file_path: str) -> None:
     """Export a model to ONNX"""
     model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
     model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
