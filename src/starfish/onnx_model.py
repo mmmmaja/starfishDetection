@@ -8,7 +8,7 @@ from model import FasterRCNNLightning
 
 import wandb
 
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 app = typer.Typer()
 app.command()
 
@@ -16,13 +16,9 @@ app.command()
 @app.command()
 def export_to_onnx(artifact_name: str, onnx_file_path: str):
     """Export a model to ONNX"""
-    wandb.init(project="starfishDetection-src_starfish")
-    artifact = wandb.use_artifact(artifact_name, type="model")
-    artifact_dir = artifact.download()
-    checkpoint_path = f"{artifact_dir}/model.ckpt"
-
+    model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
+    model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
     model = FasterRCNNLightning().to(DEVICE)
-    model.load_state_dict(torch.load(checkpoint_path, map_location=DEVICE), strict=False)
     model.eval()
 
     dummy_input = torch.randn(1, 3, 800, 800).to(DEVICE)
