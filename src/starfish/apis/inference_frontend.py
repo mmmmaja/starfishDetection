@@ -1,4 +1,3 @@
-# from google.cloud import run_v2
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,49 +10,6 @@ from requests.exceptions import RequestException, Timeout
 # Constants for the Google Cloud project and region
 PROJECT = "starfish-detection"
 REGION = "us-central1"
-
-
-def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0.02) -> np.ndarray:
-    """
-    Process the prediction and draw the bounding boxes on the image
-    :param prediction: The prediction from the model
-    :param image: The input image
-    :param NMS_threshold: The threshold for Non-Maximum Suppression
-    :return: The image with the bounding boxes drawn on it
-    """
-
-    # Extract the scores and boxes from the prediction
-    scores = prediction["scores"]
-    boxes = prediction["boxes"]
-
-    keep_scores, keep_boxes = NMS(scores, boxes, iou_threshold=NMS_threshold)
-    print(f"Before NMS: {len(scores)} After NMS: {len(keep_scores)}")
-
-    # Resize the image
-    image = cv2.resize(image, (640, 640))
-
-    # Draw the bounding boxes on the image
-    boxes_data = []
-    for i, box in enumerate(keep_boxes):
-        x1, y1, x2, y2 = box
-        boxes_data.append({"score": float(keep_scores[i]), "box": [int(x1), int(y1), int(x2), int(y2)]})
-
-        # Add the bounding box to the image
-        cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 0, 255), thickness=2)
-
-        # Add the confidence score to the bounding box
-        cv2.putText(
-            image,
-            text=f"{keep_scores[i]:.2f}",
-            org=(int(x1), int(y1)),
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=0.5,
-            color=(255, 255, 255),
-            thickness=1,
-        )
-
-    return image
-
 
 def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float = 0.02) -> tuple:
     """
@@ -85,24 +41,49 @@ def NMS(scores: torch.Tensor, boxes: torch.Tensor, iou_threshold: float = 0.02) 
     return keep_scores, keep_boxes
 
 
-@st.cache_resource
-def get_backend_url():
-    """
-    Get the URL of the backend service.
-    """
-    return "https://backend-638730968773.us-central1.run.app/"
-    # parent = f"projects/{PROJECT}/locations/{REGION}"
-    # client = run_v2.ServicesClient()
-    # services = client.list_services(parent=parent)
 
-    # for service in services:
-    #     # print(service.name)
-    #     if service.name.split("/")[-1] == "backend":
-    #         print(f"Backend service found: {service.uri}")
-    #         return service.uri
+def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0.02) -> np.ndarray:
+    """
+    Process the prediction and draw the bounding boxes on the image
+    :param prediction: The prediction from the model
+    :param image: The input image
+    :param NMS_threshold: The threshold for Non-Maximum Suppression
+    :return: The image with the bounding boxes drawn on it
+    """
 
-    # name = os.environ.get("backend", None)
-    # return name
+    # Extract the scores and boxes from the prediction
+    scores = prediction["scores"]
+    boxes = prediction["boxes"]
+
+    # Run Non-Maximum Suppression (NMS) to remove overlapping boxes
+    keep_scores, keep_boxes = NMS(scores, boxes, iou_threshold=NMS_threshold)
+    print(f"Before NMS: {len(scores)} After NMS: {len(keep_scores)}")
+
+    # Resize the image
+    image = cv2.resize(image, (640, 640))
+
+    # Draw the bounding boxes on the image
+    boxes_data = []
+    for i, box in enumerate(keep_boxes):
+        x1, y1, x2, y2 = box
+        boxes_data.append({"score": float(keep_scores[i]), "box": [int(x1), int(y1), int(x2), int(y2)]})
+
+        # Add the bounding box to the image
+        cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 0, 255), thickness=3)
+
+        # Add the confidence score to the bounding box
+        cv2.putText(
+            image,
+            text=f"{keep_scores[i]:.2f}",
+            org=(int(x1), int(y1)),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.7,
+            color=(0, 0, 0),
+            thickness=2,
+        )
+
+    return image
+
 
 
 def object_detection(image: bytes, backend: str) -> dict:
@@ -135,7 +116,7 @@ def object_detection(image: bytes, backend: str) -> dict:
         return {"error": error_message}
 
 
-def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = "dark") -> plt.Figure:
+def plot_confidence_histogram(data: torch.Tensor, bins: int = 20) -> plt.Figure:
     """
     Plot a histogram of the confidence scores with improved aesthetics and dark mode compatibility.
     :param data: The confidence scores
@@ -143,28 +124,16 @@ def plot_confidence_histogram(data: torch.Tensor, bins: int = 20, theme: str = "
     :param theme: 'dark' or 'light' theme
     :return: The histogram plot
     """
-    if theme == "dark":
-        plt.style.use("dark_background")
-    else:
-        plt.style.use("seaborn-whitegrid")
+    plt.style.use("dark_background")
 
     fig, ax = plt.subplots(figsize=(8, 4), facecolor="none")
 
     # Create the histogram
-    n, bins, patches = ax.hist(data, bins=bins, edgecolor="white", alpha=0.7, linewidth=0.7)
-
-    # Normalize bin counts for color mapping
-    norm = plt.Normalize(min(n), max(n))
-    colormap = plt.cm.viridis  # Suitable for dark backgrounds
-
-    # Apply colors to each bin based on their normalized count
-    for count, patch in zip(n, patches):
-        color = colormap(norm(count))
-        patch.set_facecolor(color)
+    n, bins, patches = ax.hist(data, bins=bins, edgecolor="white", alpha=0.7, linewidth=0.7, color="deepskyblue")
 
     # Set title and labels with appropriate colors
-    title_color = "white" if theme == "dark" else "black"
-    label_color = "white" if theme == "dark" else "black"
+    title_color = "white"
+    label_color = "white"
 
     ax.set_title("Confidence Scores Distribution", color=title_color, fontsize=16, pad=15)
     ax.set_xlabel("Confidence Score", color=label_color, fontsize=12, labelpad=10)
@@ -190,28 +159,8 @@ def main() -> None:
     """
     st.set_page_config(page_title="Starfish Detection", layout="centered")
 
-    # # Sidebar for additional controls
-    # st.sidebar.header("Settings")
-
-    # # Theme selection (optional enhancement)
-    # theme = st.sidebar.radio("Select Theme", options=["Dark", "Light"], index=0)
-
-    #  # Slider to adjust IoU threshold
-    # iou_threshold = st.sidebar.slider(
-    #     "IoU Threshold for NMS",
-    #     min_value=0.,
-    #     max_value=1.,
-    #     value=0.5,
-    #     step=0.05,
-    #     help="Adjust the Intersection over Union (IoU) threshold for Non-Maximum Suppression."
-    # )
-
     # Connect to the backend service
-    backend = get_backend_url()
-    if backend is None:
-        msg = "Backend service not found"
-        st.error(msg)
-        return
+    backend_url = "https://backend-638730968773.us-central1.run.app/"
 
     # Prompt the user to upload an image
     st.title("Starfish Detection")
@@ -223,7 +172,7 @@ def main() -> None:
 
         with st.spinner("Detecting starfish..."):
             # Convert image to numpy array
-            result = object_detection(image, backend=backend)
+            result = object_detection(image, backend=backend_url)
 
         if result is not None:
             if "error" in result:
@@ -240,14 +189,13 @@ def main() -> None:
                 processed_image = cv2.resize(processed_image, (image.shape[1], image.shape[0]))
 
                 # show the image and prediction
-                st.image(processed_image, caption="Detected Starfish", width=500, channels="BGR")
+                st.image(processed_image, caption="Detected Starfish", width=800, channels="BGR")
 
                 # Make a histogram of the scores
-                # Create the plot
-                fig = plot_confidence_histogram(result["scores"], theme="dark")
-                # Show the plot
+                fig = plot_confidence_histogram(result["scores"])
                 st.pyplot(fig)
 
+                # Show the predicted bounding boxes
                 st.write("### Predicted Bounding Boxes:")
                 st.write(result["boxes"])
         else:
