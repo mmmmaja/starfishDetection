@@ -11,6 +11,7 @@ import albumentations as A
 import cv2
 import numpy as np
 import onnxruntime as rt
+import requests
 import torch
 from albumentations.pytorch.transforms import ToTensorV2
 from fastapi import FastAPI, File, UploadFile
@@ -33,21 +34,25 @@ async def lifespan(app: FastAPI):
 
     model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
     onnx_path = "https://storage.googleapis.com/faster-rcnn-onnx/FasterRCNN.onnx"
+    local_onnx_path = "FasterRCNN.onnx"
 
     try:
-        # Load the models
+        # Load torch model
         model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
-        onnx_session = rt.InferenceSession(onnx_path)
+
+        # Load ONNX model
+        response = requests.get(onnx_path)
+        with open(local_onnx_path, "wb") as f:
+            f.write(response.content)
+
+        providers = ["CUDAExecutionProvider"] if torch.cuda.is_available() else ["CPUExecutionProvider"]
+        onnx_session = rt.InferenceSession(local_onnx_path, providers=providers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
 
     # Configure the device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
-
-    # Configure ONNX session options
-    providers = ["CUDAExecutionProvider"] if torch.cuda.is_available() else ["CPUExecutionProvider"]
-    onnx_session = rt.InferenceSession(onnx_path, providers=providers)
 
     yield
     # Clean up
