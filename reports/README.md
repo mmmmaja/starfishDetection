@@ -257,14 +257,13 @@ src/starfish/__init__.py                   0      0   100%
 src/starfish/callbacks.py                 47     47     0%   1-128
 src/starfish/data.py                     113     30    73%   41-43, 81-82, 87-88, 95, 121-126, 141-162, 173-179, 233
 src/starfish/evaluate.py                  32     32     0%   1-48
-src/starfish/image_drift.py              109    109     0%   1-284
 src/starfish/model.py                     60     34    43%   53-59, 67-81, 95-106, 117-118, 125-141
 src/starfish/onnx_model.py                28     28     0%   1-51
 src/starfish/profile_forward_pass.py      15     15     0%   1-21
 src/starfish/train.py                     43     43     0%   1-69
 src/starfish/visualize.py                 12     12     0%   1-18
 --------------------------------------------------------------------
-TOTAL                                    459    350    24%
+TOTAL                                    350    241    31%
 ```
 ### Question 9
 
@@ -311,7 +310,9 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
-Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581](Check pre-commit example action workflow) shows one of our GitHub actions workflows.
+Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [Check pre-commit example action workflow](https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581) shows one of our GitHub actions workflows. Pre-commits explained earlier help keep the code base clean and readable.
+
+Furthermore, we had a dependabot that helps automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
 
 ## Running code and tracking experiments
 
@@ -457,7 +458,7 @@ We used Cloud Run for creating docker containers for our backend and frontend.
 >
 > Answer:
 
-We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end.
+We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end. Much of the training ended up being run on a hpc cluster one of the group members have access to with nvidia a100 gpus.
 
 ### Question 19
 
@@ -486,7 +487,8 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
---- question 21 fill here ---
+![GCP Cloud Build history](figures/builds.png)
+![Latest build](figures/specific_build.png)
 
 ### Question 22
 
@@ -519,11 +521,9 @@ We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line 
 >
 > Answer:
 
-We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
+We did manage to write an inference API for our model using the FastAPI library. We hosted the trained model in a Google Cloud Storage Bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
 
-Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
-
-Furthermore we built a frontend for this API using the `streamlit` library. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+Additionally we automated the build of the Docker image required for deploying the backend. Every commit to the main branch triggers an automatic build of the Dockerfile and automatic pushing to the Artifact Registry. This simplified our workflow and minimized potential deployment errors.
 
 ### Question 24
 
@@ -539,7 +539,12 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 24 fill here ---
+We did deploy our API in the cloud. Once the backend docker image was in the Artifact Registry, we used the `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` command for deployment. This deployed service is available at [https://backend-638730968773.us-central1.run.app](https://backend-638730968773.us-central1.run.app) and can be invoked through a curl command:
+```bash
+curl -X 'POST' 'https://backend-638730968773.us-central1.run.app/inference/' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'data=@PATH_TO_IMAGE;type=image/jpeg'
+```
+Furthermore, we built a frontend for this deployed API using the `streamlit` library. So a user can also invoke the API by uploading an image to the webpage [https://frontend-638730968773.us-central1.run.app](https://frontend-638730968773.us-central1.run.app). Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+
 
 ### Question 25
 
@@ -590,7 +595,7 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
-- s195398 had used a little more than $11.
+We used s247157's credits during the project, totalling $8.51 used for the project. This comes from $5.97 spent on Cloud Storage, $1.71 spent on Cloud Run, $0.75 spent on the Artifact Registry, $0.05 spent on Vertex AI, and $0.02 spent on Networking. Overall, we didn't spend many credits due to issues with getting the quota increased for Vertex AI GPUs and then being unable to access them. The Faster R-CNN model was hard to run locally for more than just a few batches due to the size of the model and also complications with MPS if you wanted to run it on GPU with Mac. So instead, we trained a model on Vertex AI using CPUs and we used a university HPC for GPU resources.
 
 ### Question 28
 
@@ -649,7 +654,7 @@ When pushing to Git, our GitHub actions execute their workflows. These workflows
 > Answer:
 
 Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
-Faster R-CNN model also gave a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions.
+Faster R-CNN model also gave a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions. Another thing was knowing how the overall structure of the project worked. Since the group had a lot of task delegated between the members, a lot of the project was made without the individual group member being involved which created challenges in having a good understanding of the entire project. But this is how it is out in the industry as well.
 
 ### Question 31
 
@@ -667,4 +672,9 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-Moust Holmes did training script structure, hydra config files and wandb logging
+s250797 did training script structure, hydra config files and wandb logging
+s195398 did work did pre-commit hooks, ONNX and made a few API tests.
+s194242 worked on the profiling, logging and the evaluate scripts.
+s243077 did work on the model and data scripts and on the APIs.
+
+We have used ChatGPT and GitHub Copilot Chat to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.

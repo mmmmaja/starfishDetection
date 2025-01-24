@@ -108,34 +108,6 @@ The directory structure of the project looks like this:
 
 ## Documentation
 
-### Tests
-Run all tests and calculate coverage
-```bash
-invoke test
-```
-Run data tests
-```bash
-invoke test-data
-```
-Run model tests
-```bash
-invoke test-model
-```
-Load test
-```bash
-locust -f tests/performancetests/locustfile.py --headless --users 10 --spawn-rate 1 --run-time 1m --host https://backend-638730968773.us-central1.run.app
-```
-
-### Documentation Site
-Build site locally
-```bash
-mkdocs build
-```
-Deploy site to `gh-pages` branch
-```bash
-mkdocs gh-deploy
-```
-
 Created using [mlops_template](https://github.com/SkafteNicki/mlops_template),
 a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) for getting
 started with Machine Learning Operations (MLOps).

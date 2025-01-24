@@ -33,6 +33,21 @@ steps:
     'push',
     'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend'
   ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'Deploy backend to Cloud Run'
+  waitFor: ['Push backend container image']
+  args: [
+    'run',
+    'deploy',
+    'backend',
+    '--image',
+    'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend',
+    '--region',
+    'us-central1',
+    '--platform',
+    'managed',
+    '--allow-unauthenticated'
+  ]
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Build frontend container image'
   waitFor: ['-']
@@ -50,6 +65,21 @@ steps:
   args: [
     'push',
     'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend'
+  ]
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'Deploy frontend to Cloud Run'
+  waitFor: ['Push frontend container image']
+  args: [
+    'run',
+    'deploy',
+    'frontend',
+    '--image',
+    'us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend',
+    '--region',
+    'us-central1',
+    '--platform',
+    'managed',
+    '--allow-unauthenticated'
   ]
 options:
   env:

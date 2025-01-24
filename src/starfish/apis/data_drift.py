@@ -1,15 +1,15 @@
-import anyio
-import pandas as pd
-from fastapi.responses import HTMLResponse
-from fastapi import FastAPI
-import numpy as np
-from evidently.metrics import DataDriftTable, ColumnDriftMetric
-from evidently.report import Report
-import json
 import ast
+import json
 import os
-import cv2
 
+import anyio
+import cv2
+import numpy as np
+import pandas as pd
+from evidently.metrics import ColumnDriftMetric, DataDriftTable
+from evidently.report import Report
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 
 # Where the training data is stored
 REFERENCE_BUCKET_URL = "/gcs/starfish-detection-data"
@@ -264,7 +264,7 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     """
     data_path = f"{bucket_name}/{prefix}"
     try:
-        #Read the csv file
+        # Read the csv file
         df = pd.read_csv(data_path)
         print(f"Download target data: ({len(df)})")
         df = df.head(n)
@@ -286,7 +286,7 @@ async def get_report_images(n: int = 5) -> HTMLResponse:
     :return: The HTML response containing the report
     """
     data = download_images(REFERENCE_BUCKET_URL, n)
-    
+
     # Get the statistics on the images
     image_features = extract_image_features(data)
 
@@ -305,7 +305,7 @@ async def get_report_targets(n: int = 5) -> HTMLResponse:
     :return: The HTML response containing the report
     """
     data = download_targets(REFERENCE_BUCKET_URL, n)
-    
+
     # Get the statistics on the images
     target_features = extract_target_features(data)
 
