@@ -595,7 +595,7 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
-- s195398 had used a little more than $11.
+- s195398 had used a little more than $23.
 - s250797 used $0.01
 - s194242 used $
 - s243077 used $
