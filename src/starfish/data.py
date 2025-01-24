@@ -281,18 +281,3 @@ class StarfishDataModule(pl.LightningDataModule):
             collate_fn=custom_collate_fn,
             shuffle=False,
         )
-
-
-# if __name__ == "__main__":
-#     # Get the main directory of the project
-#     parent_directory = Path(__file__).resolve().parents[2]
-#     data_path = parent_directory / "starfish-detection-data" / "data" / "raw"
-
-#     # For now the data does not require any preprocessing
-#     # Otherwise, uncomment the following line to preprocess the data
-#     # typer.run(preprocess)
-
-#     # Create the dataset and plot a sample
-#     dataset = create_dataset(data_path, subset=0.001)  # Adjust subset as needed
-#     for i in range(5):
-#         dataset.plot_sample(i)
