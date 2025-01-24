@@ -18,21 +18,19 @@ For a more user-friendly experience, you can access our frontend webpage at [htt
 Follow these steps to get predictions on an image.
 
 1. Click `Browse files`.
-[app-image1](figures/app-image1.png)
+![app-image1](figures/app-image1.png)
 
 2. Select your desired image. 
-[app-image2](figures/app-image2.png)
+![app-image2](figures/app-image2.png)
 
 3. You should then see the image you selected appear.
-[app-image3](figures/app-image3.png)
+![app-image3](figures/app-image3.png)
 
 4. Once the inference has finished, you will see boxes on your image around predicted starfish along with confidence scores.
-[app-image4](figures/app-image4.png)
-
+![app-image4](figures/app-image4.png)
 
 5. Below you will also see a histogram over the confidence scores for your image.
-[app-image5](figures/app-image5.png)
-
+![app-image5](figures/app-image5.png)
 
 6. Finally, you get a matrix of the bounding box coordinates in pixel coordinates.
-
+![app-image6](figures/app-image6.png)
