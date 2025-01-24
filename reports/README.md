@@ -93,9 +93,9 @@ will check the repositories and the code to verify your answers.
 
 ### Week 3
 
-* [ ] Check how robust your model is towards data drifting (M27)
-* [ ] Deploy to the cloud a drift detection API (M27)
-* [ ] Instrument your API with a couple of system metrics (M28)
+* [x] Check how robust your model is towards data drifting (M27)
+* [x] Deploy to the cloud a drift detection API (M27)
+* [x] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [X] If applicable, optimize the performance of your data loading using distributed data loading (M29)
@@ -109,6 +109,7 @@ will check the repositories and the code to verify your answers.
 * [X] Revisit your initial project description. Did the project turn out as you wanted?
 
 The project largely turned out as we wanted. The main change we made was to use the FasterRCNN model instead of the YOLO11 model. We made this switch primarily because it did not seem to be straightforward to modify the architecture of YOLO11 to support two classes, whereas this was an input parameter to FasterRCNN.
+* [x] Create an architectural diagram over your MLOps pipeline
 * [X] Create an architectural diagram over your MLOps pipeline
 * [X] Make sure all group members have an understanding about all parts of the project
 * [X] Uploaded all your code to GitHub
@@ -313,6 +314,12 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [Check pre-commit example action workflow](https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581) shows one of our GitHub actions workflows. Pre-commits explained earlier help keep the code base clean and readable.
 
 Furthermore, we had a dependabot that helps automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
+
+We made use of unit tests and integration tests to ensure that code changes didn't break any crucial functionality. We have unit tests for the model, dataset, data loading, API, backend, frontend, and more. These comprehensive tests provided confidence in maintaining a robust system.
+
+We used Ruff with our pre-commit hooks to ensure good coding practices and consistent linting. Additionally, we implemented GitHub workflows for model staging, automated testing, and deployment, which streamlined our development and deployment pipelines while ensuring quality and reliability at every stage.
+
+We didn't manage to get to the point where we were able in implement continious training workflow.
 
 ## Running code and tracking experiments
 
@@ -576,7 +583,9 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
---- question 26 fill here ---
+We implemented monitoring for our deployed model using the Evidently framework. The monitoring pipeline detects data drift by comparing the input feature distributions of the current inference data to the reference (training) data stored in GCP buckets. Features such as brightness, contrast, and sharpness are extracted from images, along with color histograms, to quantify changes in input data over time. Evidently generates detailed HTML reports with metrics like Data Drift Tables and column-specific drift metrics.
+
+Monitoring is crucial for maintaining model performance. By detecting data drift early, we can proactively retrain the model on updated data to address shifts in the input distribution, preventing performance degradation. This ensures our application remains robust and accurate in the face of real-world changes.
 
 ## Overall discussion of project
 
@@ -679,5 +688,6 @@ s250797 did training script structure, hydra config files and wandb logging
 s195398 did work did pre-commit hooks, ONNX and made a few API tests.
 s194242 worked on the profiling, logging and the evaluate scripts.
 s243077 did work on the model and data scripts and on the APIs.
+s247157 did work on APIs, front and backed and data drift.
 
 We have used ChatGPT and GitHub Copilot Chat to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.
