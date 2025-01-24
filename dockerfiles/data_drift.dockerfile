@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install pandas==2.2.3 fastapi==0.115.6 numpy==2.2.1 
+RUN pip install pandas==2.2.3 fastapi==0.115.6 numpy==2.2.1
 RUN pip install pillow==11.1.0 opencv-python==4.11.0.86 uvicorn==0.34.0
 RUN pip install evidently==0.5.1 anyio==4.8.0
 

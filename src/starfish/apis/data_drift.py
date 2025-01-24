@@ -21,8 +21,6 @@ Task: Deploy a drift detection API to the cloud (M27)
 """
 
 
-
-
 def get_html(html_table: str, title: str) -> str:
     """
     Generate an HTML report with a title and a table
