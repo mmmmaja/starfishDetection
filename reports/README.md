@@ -88,7 +88,7 @@ will check the repositories and the code to verify your answers.
 * [X] Deploy your model in GCP using either Functions or Run as the backend (M23)
 * [X] Write API tests for your application and setup continues integration for these (M24)
 * [X] Load test your application (M24)
-* [X] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
+* [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 * [X] Create a frontend for your API (M26)
 
 ### Week 3
