@@ -487,7 +487,8 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
---- question 21 fill here ---
+![GCP Cloud Build history](figures/builds.png)
+![Latest build](figures/specific_build.png)
 
 ### Question 22
 
