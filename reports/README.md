@@ -146,6 +146,7 @@ The project largely turned out as we wanted. The main change we made was to use 
 > Answer:
 
 We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as random rotations, flips, scaling, and color adjustments to the images. These augmentations were applied to prevent overfitting and improve the model's generalization capabilities.
+Overall Albumentations was pretty easy to implement with the only exeptions that using np.random.seed(0) random.seed(0) pl.seed_everything(0) didn't fix the random augmentations which we only discovered when we started logging training images. Turns out you have to pass a random seed to the transform class.
 
 ## Coding environment
 
@@ -359,11 +360,13 @@ We did several things to ensure reproducibility. First, all parameters and hyper
 torch.manual_seed(0)
 np.random.seed(0)
 random.seed(0)
+pl.seed_everything(0)
 
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # sets CuBLAS workspace configuration for deterministic behavior
 torch.backends.cudnn.deterministic = True  # ensures that the CUDA backend produces deterministic results
 torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can introduce non-deterministic behavior
 ```
+We did however discover that Albumentation introduced some randomness even with all the random seeds set.  We managed to fix it by using a seen in the transforms.
 
 ### Question 14
 
@@ -644,6 +647,7 @@ When pushing to Git, our GitHub actions execute their workflows. These workflows
 > Answer:
 
 Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
+Faster R-CNN model also gave a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions.
 
 ### Question 31
 
