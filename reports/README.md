@@ -614,6 +614,9 @@ We used s247157's credits during the project, totalling $8.51 used for the proje
 Yes, we implemented a frontend for our API to provide users with an intuitive and interactive interface. It was build using the  `streamlit` library.
 When a user uploads an image, the frontend sends it to the backend API, which processes the image to detect starfish and returns bounding boxes along with confidence scores. The bounding boxes are then overlayed on the original image, and displayed. Additionally, we included a histogram that shows the distribution of confidence scores.
 
+Additionally, we implemented a data drift detection API and deployed it on Google Cloud. The API generates reports by analyzing image statistics such as color histograms, brightness, and other metrics. It compares the distribution of the training data against the data uploaded by users when using the inference API. Both datasets are stored in a Google Cloud bucket.
+This deployed service is available at [https://data-drift-638730968773.us-central1.run.app](https://data-drift-638730968773.us-central1.run.app)
+
 ### Question 29
 
 > **Include a figure that describes the overall architecture of your system and what services that you make use of.**
