@@ -64,6 +64,25 @@ def profile_forward_pass(ctx):
 def build_train_image(ctx):
     ctx.run("docker build -f dockerfiles/train.dockerfile . -t train:latest", echo=True, pty=not WINDOWS)
 
+@task
+def backend_image_to_cloud(ctx):
+    ctx.run("docker build -t backend:latest -f dockerfiles/inference_backend.dockerfile .", echo=True, pty=not WINDOWS)
+    ctx.run("docker tag backend:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest", echo=True, pty=not WINDOWS)
+    ctx.run("docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest", echo=True, pty=not WINDOWS)
+
+@task
+def frontend_image_to_cloud(ctx):
+    ctx.run("docker build -t frontend:latest -f dockerfiles/inference_frontend.dockerfile .", echo=True, pty=not WINDOWS)
+    ctx.run("docker tag frontend:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest", echo=True, pty=not WINDOWS)
+    ctx.run("docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest", echo=True, pty=not WINDOWS)
+
+@task
+def deploy_backend(ctx):
+    ctx.run("gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080", echo=True, pty=not WINDOWS)
+
+@task
+def front_backend(ctx):
+    ctx.run("gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080", echo=True, pty=not WINDOWS)
 
 @task
 def run_train_image(ctx):
