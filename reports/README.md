@@ -580,7 +580,8 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 28 fill here ---
+Yes, we implemented a frontend for our API to provide users with an intuitive and interactive interface. It was build using the  `streamlit` library. 
+When a user uploads an image, the frontend sends it to the backend API, which processes the image to detect starfish and returns bounding boxes along with confidence scores. The bounding boxes are then overlayed on the original image, and displayed. Additionally, we included a histogram that shows the distribution of confidence scores.
 
 ### Question 29
 
