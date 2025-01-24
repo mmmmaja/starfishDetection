@@ -120,7 +120,6 @@ async def inference(data: UploadFile = File(...)) -> dict:
             model.eval()
             # Prediction is the bounding boxes and the scores
             prediction = model.model(batch.to(device))
-            print(prediction)
             return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
     except Exception as e:
         raise HTTPException(status_code=500) from e
@@ -153,7 +152,6 @@ async def onnx_inference(data: UploadFile = File(...)) -> dict:
         # Perform inference
         input_name = onnx_session.get_inputs()[0].name
         prediction = onnx_session.run(None, {input_name: batch})
-        print(prediction[1])
 
         return {"scores": prediction[2].tolist(), "boxes": prediction[0].tolist()}
     except Exception as e:
