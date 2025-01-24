@@ -32,19 +32,11 @@ async def lifespan(app: FastAPI):
     """
     global model, onnx_session, device
 
-    model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
-    cloud_onnx_path = "https://storage.googleapis.com/faster-rcnn-onnx/FasterRCNN.onnx"
-    local_onnx_path = "FasterRCNN.onnx"
+    model_path = "/gcs/starfish-model/model.ckpt"
+    local_onnx_path = "/gcs/faster-rcnn-onnx/FasterRCNN.onnx"
 
     try:
-        # Load torch model
-        model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
-
-        # Load ONNX model
-        response = requests.get(cloud_onnx_path)
-        with open(local_onnx_path, "wb") as f:
-            f.write(response.content)
-
+        model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2) # load torch model
         providers = ["CUDAExecutionProvider"] if torch.cuda.is_available() else ["CPUExecutionProvider"]
         onnx_session = rt.InferenceSession(local_onnx_path, providers=providers)
     except Exception as e:
