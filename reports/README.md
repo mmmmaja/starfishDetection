@@ -435,10 +435,11 @@ Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97%
 > Answer:
 
 
-Bucket is used to store objects such as data or models. We created a bucket for our data in GCP and another one for the model we deploy.
+We used Cloud Build with a Trigger to automatically build our dockerfiles and then push the images to the Artifact Registry, which is for storing software artifacts such as Docker images. 
+Cloud Bucket is used to store objects such as data or models. We created a bucket for our data in GCP, one for the PyTorch model we deploy, one for the ONNX version of the model, and one to store data fed into the model during deployment for monitoring purposes.
 Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
 Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.
-CLOUD RUN ADD HERE
+We used Cloud Run for creating docker containers for our backend and frontend.
 
 ### Question 18
 
@@ -453,7 +454,7 @@ CLOUD RUN ADD HERE
 >
 > Answer:
 
---- question 18 fill here ---
+We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end.
 
 ### Question 19
 
@@ -495,7 +496,8 @@ CLOUD RUN ADD HERE
 >
 > Answer:
 
---- question 22 fill here ---
+Yes, we trained our model in the cloud using Vertex AI. We chose this over the Compute Engine so the VM would close automatically when the training was complete. First, this required a `train` image built from `train.dockerfile` to be in the Artifact Registry, which we did automatically with a Cloud Build Trigger. We pointed to this image in `vertex_ai_config.yaml`, which also specified our desired machine type. Then we filled out `vertex_ai_train.yaml`, which fetched the Wandb API key stored as a Secret on the cloud and included the command to run a custom AI job. 
+We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line to start the job. We then went into the `Custom Jobs` tab in the `Training` section of Vertex AI to monitor the training process as well as the Wandb dashboard.
 
 ## Deployment
 
