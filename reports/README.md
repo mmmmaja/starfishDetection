@@ -617,7 +617,17 @@ When a user uploads an image, the frontend sends it to the backend API, which pr
 >
 > Answer:
 
---- question 29 fill here ---
+When developing this project, we started in our local setup, where we created a repository from a CookieCutter template. There, we used PyTorch Lightning as boilerplate to avoid repetitive coding. We used this to develop our model. To develop our code, we had to use a lot of different packages, which is why having a dedicated Python environment is useful. We all used Conda. To optimize and debug our model, we used PyTorch profiler and PDB.
+
+To get the data locally for our model, we used Google Cloud data storage because we had problems with DVC pull. However, we could push data with DVC pull.
+
+The model can be configured in different ways depending on local or cloud-based use cases which is why we used Hydra. We also used one place where we used Typer instead of Hydra due to a misunderstanding. Before pushing we used Pre-Commit-Hooks. We of course used Git for version control.
+
+Once we have our model, we can convert it to ONNX to make it more lightweight and compatible with many other deep learning frameworks. We then store both our PyTorch model and ONNX model in a Google Cloud Bucket. This bucket also stores experimental loggings from Wandb. From this bucket, our FastAPI fetches the models depending on the requested endpoint from the frontend, which displays the result for the end-user.
+
+When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, the Cloud Run and Vertex AI can consume our containers. These can then save their predictions in the Google Cloud data storage for monitoring.
+
+![alt text](MLOPS-stack.png)
 
 ### Question 30
 
