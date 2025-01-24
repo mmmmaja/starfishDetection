@@ -672,3 +672,4 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 
 s250797 did training script structure, hydra config files and wandb logging
 s195398 did work did pre-commit hooks, ONNX and made a few API tests.
+s194242 did work of the profiling, logging and the evaluate scripts.
