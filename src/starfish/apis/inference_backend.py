@@ -17,11 +17,17 @@ from albumentations.pytorch.transforms import ToTensorV2
 from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
 from model import FasterRCNNLightning
+from google.cloud import storage 
+import os
+import uuid
+
 
 """
 Create a FastAPI application that can do inference using the model (M22)
 This is the backend service that retrieves the prediction from the image
 """
+
+GCS_BUCKET_NAME = "inference_api_data"
 
 
 @asynccontextmanager
@@ -30,7 +36,7 @@ async def lifespan(app: FastAPI):
     Context manager to handle the lifespan of the FastAPI application
     :param app: The FastAPI application
     """
-    global model, onnx_session, device
+    global model, onnx_session, device, storage_client, bucket
 
     model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
     cloud_onnx_path = "https://storage.googleapis.com/faster-rcnn-onnx/FasterRCNN.onnx"
@@ -49,14 +55,26 @@ async def lifespan(app: FastAPI):
         onnx_session = rt.InferenceSession(local_onnx_path, providers=providers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
+    
+    print("Model loaded successfully.")
 
     # Configure the device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
+    # Intialize the target bucket for saving new data
+    try:
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(GCS_BUCKET_NAME)
+        if not bucket.exists():
+            raise HTTPException(status_code=500, detail=f"GCS bucket '{GCS_BUCKET_NAME}' does not exist.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize GCS client: {str(e)}")
+    print("GCS client initialized successfully.")
+
     yield
     # Clean up
-    del model, onnx_session, device
+    del model, onnx_session, device, storage_client, bucket
 
 
 # Create the FastAPI app
@@ -89,40 +107,56 @@ async def root() -> dict:
     return {"message": "Hello from the backend!"}
 
 
+
 @app.post("/inference/")
-# async def: Defines an asynchronous function, allowing FastAPI to handle other requests
-# while waiting for I/O operations (like reading a file) to complete.
 async def inference(data: UploadFile = File(...)) -> dict:
     """
     Perform inference on the uploaded image.
     :param data: The uploaded image file
     :return: The prediction from the model
     """
-
-    # Read the image once it was uploaded
-    with open("image.jpg", "wb") as image:
-        content = await data.read()
-        image.write(content)
-        image.close()
-
-    # Preprocess the image to match the model's input requirements
-    image = cv2.imread("image.jpg")
-    if image is None:
-        raise HTTPException(status_code=400, detail="Invalid image file.")
-
-    image_processed = preprocess_image(image)
-    # Add a batch dimension
-    batch = image_processed.unsqueeze(0)
+    # Validate the uploaded file type
+    if not data.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
 
     try:
+        # Read the image content
+        image_bytes = await data.read()
+        # Convert bytes to numpy array
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if image is None:
+            raise ValueError("Image decoding failed.")
+
+        # Preprocess the image
+        image_processed = preprocess_image(image)
+        # Add a batch dimension
+        batch = image_processed.unsqueeze(0)
+
         # Perform inference
         with torch.no_grad():
             model.eval()
-            # Prediction is the bounding boxes and the scores
             prediction = model.model(batch.to(device))
-            return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
+        
+        # Upload the image to GCS
+        unique_id = str(uuid.uuid4())
+        file_extension = os.path.splitext(data.filename)[1] or ".jpg"  # Default to .jpg if no extension
+        gcs_filename = f"uploaded_images/{unique_id}{file_extension}"
+        blob = bucket.blob(gcs_filename)
+        blob.upload_from_string(image_bytes, content_type=data.content_type)
+        
+        print(f"Uploaded image to {gcs_filename}")
+
+        return {
+            "scores": prediction[0]["scores"].tolist(),
+            "boxes": prediction[0]["boxes"].tolist(),
+            "image_url": blob.public_url  # If you made the blob public
+        }
+
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        raise HTTPException(status_code=500) from e
+        raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")
 
 
 @app.post("/onnx-inference/")
