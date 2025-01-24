@@ -576,7 +576,9 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
---- question 26 fill here ---
+We implemented monitoring for our deployed model using the Evidently framework. The monitoring pipeline detects data drift by comparing the input feature distributions of the current inference data to the reference (training) data stored in GCP buckets. Features such as brightness, contrast, and sharpness are extracted from images, along with color histograms, to quantify changes in input data over time. Evidently generates detailed HTML reports with metrics like Data Drift Tables and column-specific drift metrics.
+
+Monitoring is crucial for maintaining model performance. By detecting data drift early, we can proactively retrain the model on updated data to address shifts in the input distribution, preventing performance degradation. This ensures our application remains robust and accurate in the face of real-world changes.
 
 ## Overall discussion of project
 
