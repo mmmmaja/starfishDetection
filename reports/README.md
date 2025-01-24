@@ -145,8 +145,7 @@ The project largely turned out as we wanted. The main change we made was to use 
 >
 > Answer:
 
-We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as random rotations, flips, scaling, and color adjustments to the images. These augmentations were applied to prevent overfitting and improve the model's generalization capabilities.
-Overall Albumentations was pretty easy to implement with the only exeptions that using np.random.seed(0) random.seed(0) pl.seed_everything(0) didn't fix the random augmentations which we only discovered when we started logging training images. Turns out you have to pass a random seed to the transform class.
+We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore, it is the fastest available augmentation library, which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as color distortion, Gaussian blur, motion blur, and random fog to the images. These augmentations were applied with our underwater video setting in mind to prevent overfitting and improve the model's generalization capabilities. Overall, Albumentations was pretty easy to implement except that using np.random.seed(0), random.seed(0), and seed_everything(0) didn't fix the randomness in the augmentations which we only discovered when we started logging training images. It turns out you have to pass a random seed to the transform class.
 
 ## Coding environment
 
@@ -166,7 +165,12 @@ Overall Albumentations was pretty easy to implement with the only exeptions that
 >
 > Answer:
 
-We managed dependencies in our project by using requirements files. Whenever we needed a new package we added it to the file and used `pip show PACKAGE` to get the package version, which we then added to the requirements file. When developing locally we created a Conda environment wherein we installed all the packages in the requirements files, and when developing on the Cloud we installed the packages directly into a Docker container. The `Documentation` section of the main README contains instructions on reproducing our environment exactly under the `Environment` subsection. The process involves creating a new Conda environment with a specific Python version and then installing the packages in the requirements files.
+We managed dependencies in our project by using requirements files. Whenever we needed a new package we added it to the file and used `pip show PACKAGE` to get the package version, which we then added to the requirements file. When developing locally we created a Conda environment wherein we installed all the packages in the requirements files, and when developing on the cloud we installed the packages directly into a Docker container. To get an exact copy of our environment, a new team member would have to create a conda environment with python version 3.11, activate it, and then run the following lines.
+```bash
+pip install -r requirements.txt
+pip install -r requirements_dev.txt
+pip install -e .
+```
 
 ### Question 5
 
@@ -182,18 +186,17 @@ We managed dependencies in our project by using requirements files. Whenever we 
 >
 > Answer:
 
-We use hydra for config files and make use the instantiate function for the main 4 objects: the pytorch lightning module, data module and trainer and the wandb logger
-code:
-- Code for the pytorch lightning module is in src/starfish/model.py
-- Code for the pytorch lightning data module is in src/starfish/data.py
-configs:
-- Config for the pytorch lightning module is in config/model/default_model.yaml
-- Config for the pytorch lightning data module is in config/data/default_data_module.yaml
-- Config for the pytorch lightning trainer is in config/trainer/default_trainer.yaml
-- Config for the wandb logger is in config/logger/wandb_logger.yaml
+We used the ML Ops cookiecutter template and filled out the .github, configs, dockerfiles, docs, reports, src, and tests folders. We also used all of the files in the root. Our documentation code is organized slightly differently from the template, with `mkdocs.yml` outside of the docs folder, and we did not use a `source` folder inside `docs`. We use Hydra for config files and use the instantiate function for the four main objects: the PyTorch lightning module, datamodule, and trainer, and the Wandb logger.
+Code:
+- Code for the PyTorch lightning module is in `src/starfish/model.py`
+- Code for the PyTorch lightning datamodule is in `src/starfish/data.py`
+Configs:
+- Config for the PyTorch lightning module is in `config/model/default_model.yaml`
+- Config for the PyTorch lightning data module is in `config/data/default_data_module.yaml`
+- Config for the PyTorch lightning trainer is in `config/trainer/default_trainer.yaml`
+- Config for the Wandb logger is in `config/logger/wandb_logger.yaml`
 
-we make use of the experiments configs to make overides to the default config fx. with the train_local.yaml  for changing the data directory from a bucket to local data and limiting the train val and test batches.
-
+We make use of the experiment configs to override the default config. For example, `train_local.yaml` changes the data directory from the bucket to local data and limits the train, val, and test batches.
 
 ### Question 6
 
@@ -208,7 +211,7 @@ we make use of the experiments configs to make overides to the default config fx
 >
 > Answer:
 
-To ensure good code quality we used Ruff. Ruff is a pip package that helps us finding and correcting lines of code that are not complying with the pep8 coding guidelines. To enforce the rules we added a pre-commit hook with "pip install pre-commit" that will block commits from being pushed if the modified files does not comply with pep8. Furthermore, we have added a workflow that will trigger every time we push changes to a pull-request or to the main branch that will run ruff commands to format the code in a way that complies with pep8. This saves means we don't have to run the ruff commands manually.
+To ensure good code quality and format we used Ruff. Ruff is a pip package that helps us find and correct lines of code that do not comply with the PEP8 coding guidelines. To enforce the rules we added a pre-commit hook with "pip install pre-commit" that blocks commits with files do not comply with PEP8. Furthermore, we have added a workflow that will trigger every time we push changes or make a pull request to the master branch that will run ruff commands to format the code in a way that complies with PEP8. This means we don't have to run the ruff commands manually. We also implemented some typing in our code, specifying function argument and output types where we felt it was most important. We have also commented code where we felt it was necessary and written documentation available [here](https://mmmmaja.github.io/starfishDetection/). These things matter in larger projects especially so that everyone can understand and contribute to code written by others and follow a common standard.
 
 ## Version control
 
@@ -227,13 +230,7 @@ To ensure good code quality we used Ruff. Ruff is a pip package that helps us fi
 >
 > Answer:
 
-We have implemented tests for the data in tests/unittests/test_data.py which cover the StarfishDataset and the StarfishDataModule
-and for the FasterRCNNLightning model and the FasterRCNNLightning module in tests/unittests/test_model.py
-
-We have also implemented integration test for the API and the utility functions.
-
-we currently don't test the train.py script as its mostly just instantiating the modules and running them.
-
+In total we have 9 tests. We have implemented tests for the data in `tests/unittests/test_data.py`, which cover the StarfishDataset and the StarfishDataModule and test for proper shapes. We implemented tests for the FasterRCNNLightning model and the FasterRCNNLightning module in `tests/unittests/test_model.py` that test the forward pass and training. In `tests/integrationtests/test_api.py` we test our backend API endpoints along with our frontend. Finally, we have a locust file in `tests/performancetests` to perform load testing of our code. We don't test the `train.py` script as it's mostly just instantiating the modules and running them.
 
 ### Question 8
 
@@ -247,8 +244,7 @@ we currently don't test the train.py script as its mostly just instantiating the
 > *code and even if we were then...*
 >
 > Answer:
-The total code coverage is 24%. We cover the most essential parts of the code like api, model and data. The files that doesn't have test coverage are files that are hard to test like callbacks or files that are used for tests like image_drift.py.
-Even if we had a 100% code coverage we are not guarenteed to be error free. You can have a high code coverage but with low test quality if the tests do not account for most of the use cases. But even if the quality of the tests were high, you can never be guarenteed an error free project.
+The total code coverage is 24%. We cover the most essential parts of the code like the API, model, and data. The files that doesn't have test coverage are files that are hard to test like callbacks or files that are used for tests like `image_drift.py`. Even if we had 100% code coverage we are not guaranteed to be error-free. You can have a high code coverage but have low test quality if the tests do not account for most of the use cases. But even if the quality of the tests were high, you can never be guaranteed an error-free project.
 
 ``` bash
 Name                                   Stmts   Miss  Cover   Missing
@@ -278,7 +274,7 @@ TOTAL                                    350    241    31%
 >
 > Answer:
 
-Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch. Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in question 6.
+Yes, we made use of both branches and pull requests in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the master branch. Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integration checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in Question 6. To save time we did sometimes commit directly to the master branch, but we always made sure to handle merge conflicts properly when doing so.
 
 ### Question 10
 
@@ -293,7 +289,7 @@ Yes, we made use of both branches and PRs in our project. Each team member worke
 >
 > Answer:
 
-Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the dvc pull command did not work for us, so we used gsutil -m cp -r gs://starfish-detection-data . instead. It would be beneficial to have version control of the data in a case where new data is collected over time and we want to be able to retrain the model as the new data comes in. This is especially important if there is a data distribution shift, in which case training on the updated data is crucial to continued model performance. Nonetheless, we may also want to be able to analyze the distribution of the data at different points, so having access to previous versions would be important.
+Yes, we used DVC for managing data in our project. Since our project used an existing public static dataset we did not strictly need version control for our data. We used DVC to push the dataset to a Google Cloud Bucket with object versioning. However, the `dvc pull` command did not work for us, so we used `gsutil -m cp -r gs://starfish-detection-data .` instead. It would be beneficial to have version control of the data in a case where new data is collected over time and we want to be able to retrain the model as the new data comes in. This is especially important if there is a data distribution shift, in which case training on the updated data is crucial to continued model performance. Nonetheless, we may also want to be able to analyze the distribution of the data at different points, so having access to previous versions would be important.
 
 ### Question 11
 
@@ -310,15 +306,7 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
-Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [Check pre-commit example action workflow](https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581) shows one of our GitHub actions workflows. Pre-commits explained earlier help keep the code base clean and readable.
-
-Furthermore, we had a dependabot that helps automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
-
-We made use of unit tests and integration tests to ensure that code changes didn't break any crucial functionality. We have unit tests for the model, dataset, data loading, API, backend, frontend, and more. These comprehensive tests provided confidence in maintaining a robust system.
-
-We used Ruff with our pre-commit hooks to ensure good coding practices and consistent linting. Additionally, we implemented GitHub workflows for model staging, automated testing, and deployment, which streamlined our development and deployment pipelines while ensuring quality and reliability at every stage.
-
-We didn't manage to get to the point where we were able in implement continious training workflow.
+Our continuous integration setup included unit and load testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [Check pre-commit example action workflow](https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581) shows one of our GitHub action workflows. Pre-commits as explained earlier help keep the code base clean and readable. We made use of unit tests and integration tests to ensure that code changes didn't break any crucial functionality. We have unit tests for the model, dataset, data loading, API, backend, frontend, and more. These comprehensive tests provided confidence in maintaining a robust system. We used Ruff with our pre-commit hooks to ensure good coding practices and consistent linting. Additionally, we implemented GitHub workflows for model staging, automated testing, and deployment, which streamlined our development and deployment pipelines while ensuring quality and reliability at every stage. We didn't manage to get to the point where we were able in implement a continuous training workflow. Furthermore, we had a dependabot that helped automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
 
 ## Running code and tracking experiments
 
@@ -337,16 +325,17 @@ We didn't manage to get to the point where we were able in implement continious 
 >
 > Answer:
 
-As mentioned in Question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
+As mentioned in Question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the command line like
 
 ```bash
 train data.batch_size=128
 ```
-or write an experiment config with several overrides like with our train_local.yaml which we can run with
+or write an experiment config with several overrides like with our `train_local.yaml` which we can run with
 
 ```bash
 train +experiment=train_local
 ```
+These command line arguments were very uesful for specifying things such as whether to use local data or pull from a cloud bucket.
 
 ### Question 13
 
@@ -373,7 +362,7 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # sets CuBLAS workspace confi
 torch.backends.cudnn.deterministic = True  # ensures that the CUDA backend produces deterministic results
 torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can introduce non-deterministic behavior
 ```
-We did however discover that Albumentation introduced some randomness even with all the random seeds set.  We managed to fix it by using a seen in the transforms.
+We did, however, discover that Albumentations introduced some randomness even with all the random seeds set. We managed to fix it by using a seed in the transforms applied to the training images.
 
 ### Question 14
 
@@ -390,8 +379,8 @@ We did however discover that Albumentation introduced some randomness even with 
 >
 > Answer:
 
-We made use of W&B for experiment tracking. The faster R-CNN uses a sum of different losses which we all track and we implemented Mean-Average-Precision (mAP) and Intersection Over Union (IoU) using torchmetrics we end up tracking a total of 39 different metrics.
-However not all the losses from the faster R-CNN seam to be applicaple like map_per_classes as we only have one class so it stays at -1 during all of training. We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top n predictions with the highest confidence score.(The images are from the start of training so very little overlap with predictions and targets)
+We made use of W&B for experiment tracking. The Faster R-CNN uses a sum of different losses which we all track. This is important to understand which loss terms are contributing the most to the training. We implemented Mean-Average-Precision (mAP) and Intersection Over Union (IoU) using torchmetrics as well, yielding a total of 39 different metrics. These are generally used for object recognition tasks to capture model performance.
+However, not all the losses from the Faster R-CNN seem to be applicaple like `map_per_classes`. As we only have one class, it stays at -1 during all of training. We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top-n predictions with the highest confidence score. Note the images are from the start of training so there is very little overlap between predictions and targets.
 Logging images with the predictions and targets on allows us to visually see if the model is learning what we want where it can be harder to understand what a mAP of 0.04 compared to a map of 0.01 means.
 Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
 ![image_logging](figures/image_logging.png)
@@ -683,11 +672,14 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-s247157 set up dvc, added project commands, wrote the train dockerfile, ran the hyperparameter sweep, ran models in the cloud, set up a cloud build trigger, and contributed to unit and load testing, continuous integration, and API deployment.
-s250797 did training script structure, hydra config files and wandb logging
-s195398 did work did pre-commit hooks, ONNX and made a few API tests.
-s194242 worked on the profiling, logging and the evaluate scripts.
-s243077 did work on the model and data scripts and on the APIs.
-s247157 did work on APIs, front and backed and data drift.
+s247157 set up dvc, added project commands, wrote the train dockerfile, ran the hyperparameter sweep, ran models in the cloud and on an HPC with distributed data loading and training, set up a cloud build trigger, created the GitHub Pages documentation, and contributed to unit and load testing, continuous integration, and API deployment.
 
-We have used ChatGPT and GitHub Copilot Chat to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.
+s243077 wrote the original data loading and model code, created the front- and back-end APIs, and contributed to the data drift API.
+
+s250797 worked on the training script structure, Hydra config files, and Wandb logging.
+
+s195398 worked on pre-commit hooks, implemented the ONNX model, wrote tests, and made the architectural diagram.
+
+s194242 worked on profiling and logging and wrote the evaluate script.
+
+The report was completed collaboratively. We used ChatGPT and GitHub Copilot Chat to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.
