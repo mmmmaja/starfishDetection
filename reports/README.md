@@ -311,7 +311,9 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
-Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581](Check pre-commit example action workflow) shows one of our GitHub actions workflows.
+Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [Check pre-commit example action workflow](https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581) shows one of our GitHub actions workflows. Pre-commits explained earlier help keep the code base clean and readable.
+
+Furthermore, we had a dependabot that helps automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
 
 ## Running code and tracking experiments
 
