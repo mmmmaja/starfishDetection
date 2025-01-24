@@ -463,8 +463,8 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
-[GCP Buckets](figures/buckets.png)
-[Bucket with data](figures/bucket_data.png)
+![GCP Buckets](figures/buckets.png)
+![Bucket with data](figures/bucket_data.png)
 
 ### Question 20
 
@@ -473,8 +473,8 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
-[GCP Artifact Registry](figures/artifact_registry.png)
-[Repository for frontend and backend images](figures/artifact_registry_frontend_backend.png)
+![GCP Artifact Registry](figures/artifact_registry.png)
+![Repository for frontend and backend images](figures/artifact_registry_frontend_backend.png)
 
 ### Question 21
 
