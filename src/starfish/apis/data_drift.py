@@ -12,9 +12,9 @@ import cv2
 
 
 # Where the training data is stored
-REFERENCE_BUCKET_URL = "/gcs/starfish-detection-data/"
+REFERENCE_BUCKET_URL = "/gcs/starfish-detection-data"
 # Where the data is uploaded to when the inference API is called
-CURRENT_BUCKET_URL = "/gcs/inference_api_data/"
+CURRENT_BUCKET_URL = "/gcs/inference_api_data"
 
 """
 Task: Deploy a drift detection API to the cloud (M27)
