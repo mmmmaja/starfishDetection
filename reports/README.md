@@ -625,7 +625,7 @@ The model can be configured in different ways depending on local or cloud-based 
 
 Once we have our model, we can convert it to ONNX to make it more lightweight and compatible with many other deep learning frameworks. We then store both our PyTorch model and ONNX model in a Google Cloud Bucket. This bucket also stores experimental loggings from Wandb. From this bucket, our FastAPI fetches the models depending on the requested endpoint from the frontend, which displays the result for the end-user.
 
-When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, the Cloud Run and Vertex AI can consume our containers. These can then save their predictions in the Google Cloud data storage for monitoring.
+When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, the Cloud Run and Vertex AI can consume our containers. Tthe Cloud Run deploys both our back- and frontend. These can then save their image and predictions in another Google Cloud data storage for monitoring.
 
 ![alt text](MLOPS-stack.png)
 
