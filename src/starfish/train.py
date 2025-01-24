@@ -2,6 +2,7 @@ import os
 import random
 from pathlib import Path
 
+import albumentations as A
 import hydra
 import numpy as np
 import omegaconf
@@ -9,7 +10,6 @@ import pytorch_lightning as pl
 import torch
 from hydra.utils import instantiate
 from loguru import logger as log
-import albumentations as A
 from omegaconf import DictConfig
 from torch.profiler import ProfilerActivity, profile, tensorboard_trace_handler
 
