@@ -261,9 +261,9 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "data/raw/train_
     :return: A list of PIL Image objects
     """
 <<<<<<< HEAD
-    
+
     data_path = f"{bucket_name}/{prefix}"
-    
+
     images, idx = [], 0
     for folder in os.listdir(data_path):
         for file in os.listdir(os.path.join(data_path, folder)):
@@ -300,7 +300,7 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     :return: A DataFrame containing the target data
     """
 <<<<<<< HEAD
-    
+
     data_path = f"{bucket_name}/{prefix}"
     try:
         #Read the csv file
@@ -311,7 +311,7 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     except Exception as e:
         print(f"Error downloading target data: {e}")
         return None
-    
+
 =======
     client = storage.Client()
     bucket = client.get_bucket(bucket_name)
@@ -344,7 +344,7 @@ async def get_report_images(n: int = 5) -> HTMLResponse:
     """
 <<<<<<< HEAD
     data = download_images(REFERENCE_BUCKET_URL, n)
-    
+
 =======
     data = download_images(REFERENCE_BUCKET_NAME, n)
 
@@ -368,7 +368,7 @@ async def get_report_targets(n: int = 5) -> HTMLResponse:
     """
 <<<<<<< HEAD
     data = download_targets(REFERENCE_BUCKET_URL, n)
-    
+
 =======
     data = download_targets(REFERENCE_BUCKET_NAME, n)
 
