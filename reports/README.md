@@ -554,7 +554,9 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 25 fill here ---
+We performed both unit testing and load testing of our API. The unit tests were made with a script that requests our deployed endpoints. We had four different unit tests. The first two tests contact the back- and frontend respectively. Finally, we had two tests of the inference response for inference with the PyTorch and ONNX models respectively.
+
+We did load testing with Locust. Here we stress tested the contacting the backend and doing inference with the regular model. We gave the backend endpoint a priority of one and the inference test a priority of three. After adding new endpoints, we did not add new tests to the locust file.
 
 ### Question 26
 
@@ -588,7 +590,7 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 27 fill here ---
+- s195398 had used a little more than $11.
 
 ### Question 28
 
