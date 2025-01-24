@@ -241,9 +241,8 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "data/raw/train_
     :param prefix: The prefix of the files to download
     :return: A list of PIL Image objects
     """
-    
     data_path = f"{bucket_name}/{prefix}"
-    
+
     images, idx = [], 0
     for folder in os.listdir(data_path):
         for file in os.listdir(os.path.join(data_path, folder)):
@@ -263,7 +262,6 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     :param prefix: The prefix of the files to download
     :return: A DataFrame containing the target data
     """
-    
     data_path = f"{bucket_name}/{prefix}"
     try:
         #Read the csv file
@@ -274,7 +272,6 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     except Exception as e:
         print(f"Error downloading target data: {e}")
         return None
-    
 
 
 # Initialize FastAPI app
@@ -339,8 +336,8 @@ async def get_drift_report(n: int = 5) -> HTMLResponse:
     """
 
     # Download the images from the GCP buckets
-    reference_images = download_images(REFERENCE_BUCKET_NAME, n)
-    current_images = download_images(CURRENT_BUCKET_NAME, n)
+    reference_images = download_images(REFERENCE_BUCKET_URL, n)
+    current_images = download_images(CURRENT_BUCKET_URL, n)
 
     # Extract features from the datasets
     reference_data = extract_image_features(reference_images)
