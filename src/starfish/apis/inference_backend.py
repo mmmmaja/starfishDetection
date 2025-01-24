@@ -152,9 +152,9 @@ async def onnx_inference(data: UploadFile = File(...)) -> dict:
     try:
         # Perform inference
         input_name = onnx_session.get_inputs()[0].name
-        outputs = onnx_session.run(None, {input_name: batch})
-        outputs_as_lists = [output.tolist() for output in outputs]
+        prediction = onnx_session.run(None, {input_name: batch})
+        print(prediction[1])
 
-        return {"output": outputs_as_lists}
+        return {"scores": prediction[2].tolist(), "boxes": prediction[0].tolist()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ONNX inference failed: {str(e)}")
