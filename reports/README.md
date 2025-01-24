@@ -541,7 +541,7 @@ We did deploy our API in the cloud. Once the backend docker image was in the Art
 ```bash
 curl -X 'POST' 'https://backend-638730968773.us-central1.run.app/inference/' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'data=@PATH_TO_IMAGE;type=image/jpeg'
 ```
-Furthermore, we built a frontend for this deployed API using the `streamlit` library. So a user can also invoke the API by uploading an image to the webpage `https://frontend-638730968773.us-central1.run.app`. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+Furthermore, we built a frontend for this deployed API using the `streamlit` library. So a user can also invoke the API by uploading an image to the webpage [https://frontend-638730968773.us-central1.run.app](https://frontend-638730968773.us-central1.run.app). Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
 
 
 ### Question 25
