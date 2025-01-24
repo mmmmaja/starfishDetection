@@ -11,7 +11,6 @@ RUN apt update && \
     libxext6 && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-
 RUN mkdir -p app
 
 COPY src/starfish/apis/inference_backend.py app/inference_backend.py
@@ -22,12 +21,11 @@ COPY pyproject.toml pyproject.toml
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
 # Set environment variable for PORT with a default value
 ENV PORT=8080
-
-
 EXPOSE $PORT
 # Start the application using Gunicorn with Uvicorn workers
-CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
-
+# CMD ["gunicorn", "app.inference_backend:app", "--bind", "0.0.0.0:8080", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker"]
+# CMD ["uvicorn", "--port", $PORT, "--host", "0.0.0.0", "app.inference_backend:app"]
+CMD exec uvicorn app.inference_backend:app --host 0.0.0.0 --port $PORT
 
 # Instructions on how to build and run the image and then deploy the API to the cloud
 
