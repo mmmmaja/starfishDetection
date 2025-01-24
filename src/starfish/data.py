@@ -220,6 +220,7 @@ class StarfishDataModule(pl.LightningDataModule):
                 ToTensorV2(),
             ],
             bbox_params=A.BboxParams(format="pascal_voc", min_visibility=0.0, label_fields=["labels"]),
+            seed=0
         )
 
         # Initialize the datasets to None
