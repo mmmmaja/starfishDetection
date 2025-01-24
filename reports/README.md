@@ -93,9 +93,9 @@ will check the repositories and the code to verify your answers.
 
 ### Week 3
 
-* [x] Check how robust your model is towards data drifting (M27)
+* [ ] Check how robust your model is towards data drifting (M27)
 * [x] Deploy to the cloud a drift detection API (M27)
-* [x] Instrument your API with a couple of system metrics (M28)
+* [ ] Instrument your API with a couple of system metrics (M28)
 * [ ] Setup cloud monitoring of your instrumented application (M28)
 * [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 * [X] If applicable, optimize the performance of your data loading using distributed data loading (M29)
@@ -109,7 +109,6 @@ will check the repositories and the code to verify your answers.
 * [X] Revisit your initial project description. Did the project turn out as you wanted?
 
 The project largely turned out as we wanted. The main change we made was to use the FasterRCNN model instead of the YOLO11 model. We made this switch primarily because it did not seem to be straightforward to modify the architecture of YOLO11 to support two classes, whereas this was an input parameter to FasterRCNN.
-* [x] Create an architectural diagram over your MLOps pipeline
 * [X] Create an architectural diagram over your MLOps pipeline
 * [X] Make sure all group members have an understanding about all parts of the project
 * [X] Uploaded all your code to GitHub
@@ -684,6 +683,7 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
+s247157 set up dvc, added project commands, wrote the train dockerfile, ran the hyperparameter sweep, ran models in the cloud, set up a cloud build trigger, and contributed to unit and load testing, continuous integration, and API deployment.
 s250797 did training script structure, hydra config files and wandb logging
 s195398 did work did pre-commit hooks, ONNX and made a few API tests.
 s194242 worked on the profiling, logging and the evaluate scripts.
