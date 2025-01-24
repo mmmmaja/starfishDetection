@@ -187,6 +187,7 @@ pip install -e .
 > Answer:
 
 We used the ML Ops cookiecutter template and filled out the .github, configs, dockerfiles, docs, reports, src, and tests folders. We also used all of the files in the root. Our documentation code is organized slightly differently from the template, with `mkdocs.yml` outside of the docs folder, and we did not use a `source` folder inside `docs`. We use Hydra for config files and use the instantiate function for the four main objects: the PyTorch lightning module, datamodule, and trainer, and the Wandb logger.
+
 Code:
 - Code for the PyTorch lightning module is in `src/starfish/model.py`
 - Code for the PyTorch lightning datamodule is in `src/starfish/data.py`
