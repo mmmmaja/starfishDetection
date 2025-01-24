@@ -190,6 +190,7 @@ We used the ML Ops cookiecutter template and filled out the .github, configs, do
 Code:
 - Code for the PyTorch lightning module is in `src/starfish/model.py`
 - Code for the PyTorch lightning datamodule is in `src/starfish/data.py`
+
 Configs:
 - Config for the PyTorch lightning module is in `config/model/default_model.yaml`
 - Config for the PyTorch lightning data module is in `config/data/default_data_module.yaml`
