@@ -245,7 +245,7 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "data/raw/train_
 
     images, idx = [], 0
     for folder in os.listdir(data_path):
-        if prefix == 'uploaded_images':
+        if prefix == "uploaded_images":
             file = os.path.join(data_path, folder)
 
             if file.endswith((".jpg", ".jpeg", ".png")):
@@ -351,7 +351,7 @@ async def get_drift_report(n: int = 5) -> HTMLResponse:
 
     # Download the images from the GCP buckets
     reference_images = download_images(REFERENCE_BUCKET_URL, n)
-    current_images = download_images(CURRENT_BUCKET_URL, n, prefix='uploaded_images')
+    current_images = download_images(CURRENT_BUCKET_URL, n, prefix="uploaded_images")
 
     # Extract features from the datasets
     reference_data = extract_image_features(reference_images)
