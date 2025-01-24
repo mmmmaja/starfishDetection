@@ -181,7 +181,7 @@ We managed dependencies in our project by using requirements files. Whenever we 
 >
 > Answer:
 
-We use hydra for config files and make use the instanciate function for the main 4 objects: the pytorch lightning module, data module and trainer and the wandb logger
+We use hydra for config files and make use the instantiate function for the main 4 objects: the pytorch lightning module, data module and trainer and the wandb logger
 code:
 - Code for the pytorch lightning module is in src/starfish/model.py
 - Code for the pytorch lightning data module is in src/starfish/data.py
@@ -262,9 +262,7 @@ Even if we had a 100% code coverage we are not guarenteed to be error free. You 
 >
 > Answer:
 
-Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch.
-
-Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in question 6.
+Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch. Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in question 6.
 
 ### Question 10
 
@@ -315,7 +313,7 @@ Our continuous integration setup included unit testing, linting, and data monito
 >
 > Answer:
 
-As mentioned in question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
+As mentioned in Question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
 
 ```bash
 train data.batch_size=128
@@ -367,8 +365,7 @@ torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can
 > Answer:
 
 We made use of W&B for experiment tracking. The faster R-CNN uses a sum of different losses which we all track and we implemented Mean-Average-Precision (mAP) and Intersection Over Union (IoU) using torchmetrics we end up tracking a total of 39 different metrics.
-However not all the losses from the faster R-CNN seam to be applicaple like map_per_classes as we only have one class so it stays at -1 during all of training.
-We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top n predictions with the highest confidence score.(The images are from the start of training so very little overlap with predictions and targets)
+However not all the losses from the faster R-CNN seam to be applicaple like map_per_classes as we only have one class so it stays at -1 during all of training. We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top n predictions with the highest confidence score.(The images are from the start of training so very little overlap with predictions and targets)
 Logging images with the predictions and targets on allows us to visually see if the model is learning what we want where it can be harder to understand what a mAP of 0.04 compared to a map of 0.01 means.
 Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
 [image_logging](figures/image_logging.png)
@@ -387,7 +384,7 @@ Logging can however quickly become computationally expensive especially with the
 >
 > Answer:
 
---- question 15 fill here ---
+We used docker in our project to containerize the training, backend, and frontend portions of the project. We wrote one dockerfile for each of these parts and then set up automatic building and pushing using Cloud Build and a trigger that listened for pushes to the master branch of our repository. All of our images were stored in the Artifact Registry. We then accessed our training image with Vertex AI to set up training runs and used our backend and frontend images in Cloud Run for deployment of our API and application. Our training image can be run with the `invoke train-vertex` command. Our backend and frontend images can be run on the cloud with `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` and `gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080`, respectively. You can find all of our dockerfiles in the [dockerfiles](../dockerfiles) subfolder of our repository. For example, our training dockerfile is [here](../dockerfiles/train.dockerfile).
 
 ### Question 16
 
