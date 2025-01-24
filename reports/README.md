@@ -246,9 +246,25 @@ we currently don't test the train.py script as its mostly just instantiating the
 > *code and even if we were then...*
 >
 > Answer:
-
+The total code coverage is 24%. We cover the most essential parts of the code like api, model and data. The files that doesn't have test coverage are files that are hard to test like callbacks or files that are used for tests like image_drift.py.
 Even if we had a 100% code coverage we are not guarenteed to be error free. You can have a high code coverage but with low test quality if the tests do not account for most of the use cases. But even if the quality of the tests were high, you can never be guarenteed an error free project.
 
+``` bash
+Name                                   Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------
+src/starfish/__init__.py                   0      0   100%
+src/starfish/callbacks.py                 47     47     0%   1-128
+src/starfish/data.py                     113     30    73%   41-43, 81-82, 87-88, 95, 121-126, 141-162, 173-179, 233
+src/starfish/evaluate.py                  32     32     0%   1-48
+src/starfish/image_drift.py              109    109     0%   1-284
+src/starfish/model.py                     60     34    43%   53-59, 67-81, 95-106, 117-118, 125-141
+src/starfish/onnx_model.py                28     28     0%   1-51
+src/starfish/profile_forward_pass.py      15     15     0%   1-21
+src/starfish/train.py                     43     43     0%   1-69
+src/starfish/visualize.py                 12     12     0%   1-18
+--------------------------------------------------------------------
+TOTAL                                    459    350    24%
+```
 ### Question 9
 
 > **Did you workflow include using branches and pull requests? If yes, explain how. If not, explain how branches and**
@@ -613,7 +629,6 @@ When a user uploads an image, the frontend sends it to the backend API, which pr
 >
 > Answer:
 
---- question 30 fill here ---
 Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
 
 ### Question 31
@@ -632,4 +647,4 @@ Figuring out how to coordinate everyone's different branches and tasks was a bit
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
---- question 31 fill here ---
+Moust Holmes did training script structure, hydra config files and wandb logging

@@ -105,6 +105,7 @@ def deploy_backend(ctx):
         pty=not WINDOWS,
     )
 
+
 @task
 def deploy_frontend(ctx):
     ctx.run(
@@ -112,6 +113,7 @@ def deploy_frontend(ctx):
         echo=True,
         pty=not WINDOWS,
     )
+
 
 @task
 def front_backend(ctx):
