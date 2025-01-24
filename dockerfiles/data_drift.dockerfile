@@ -25,6 +25,4 @@ CMD exec uvicorn data_drift:app --port $PORT --host 0.0.0.0
 # docker tag data_drift:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/data_drift:latest
 # docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/data_drift:latest
 # gcloud run deploy data-drift --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/data_drift:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080
-
-
 # gcloud beta run services add-iam-policy-binding data-drift --region=us-central1 --member=allUsers --role=roles/run.invoker
