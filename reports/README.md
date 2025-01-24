@@ -110,7 +110,7 @@ will check the repositories and the code to verify your answers.
 
 The project largely turned out as we wanted. The main change we made was to use the FasterRCNN model instead of the YOLO11 model. We made this switch primarily because it did not seem to be straightforward to modify the architecture of YOLO11 to support two classes, whereas this was an input parameter to FasterRCNN.
 * [ ] Create an architectural diagram over your MLOps pipeline
-* [ ] Make sure all group members have an understanding about all parts of the project
+* [X] Make sure all group members have an understanding about all parts of the project
 * [X] Uploaded all your code to GitHub
 
 ## Group information
@@ -370,6 +370,7 @@ Logging images with the predictions and targets on allows us to visually see if 
 Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
 [image_logging](figures/image_logging.png)
 [loss_logging](figures/loss_logging.png)
+[sweep](figures/sweep.png)
 
 ### Question 15
 
@@ -495,13 +496,11 @@ CLOUD RUN ADD HERE
 >
 > Answer:
 
-We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API features two main endpoints:
-1. `\inference\` endpoint:
-   When a user uploads an image the API loads the model, executes predictions to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
-2. `\show\` endpoint:
-    Instead of returning raw predictions, this endpoint overlays the predicted bounding boxes and confidence scores directly onto the submitted image. Through this endpoint we were able to visually inspect model's detections and is especially useful for testing.
+We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
 
 Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
+
+Furthermore we built a frontend for this API using the `streamlit` library. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
 
 ### Question 24
 
@@ -582,7 +581,8 @@ Additionally we automated the build of the Docker image required for the backend
 >
 > Answer:
 
---- question 28 fill here ---
+Yes, we implemented a frontend for our API to provide users with an intuitive and interactive interface. It was build using the  `streamlit` library.
+When a user uploads an image, the frontend sends it to the backend API, which processes the image to detect starfish and returns bounding boxes along with confidence scores. The bounding boxes are then overlayed on the original image, and displayed. Additionally, we included a histogram that shows the distribution of confidence scores.
 
 ### Question 29
 
