@@ -311,7 +311,9 @@ Yes, we used DVC for managing data in our project. Since our project used an exi
 >
 > Answer:
 
-Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581](Check pre-commit example action workflow) shows one of our GitHub actions workflows.
+Our continuous integration setup included unit testing, linting, and data monitoring. We tested with multiple operating systems, Python versions, and PyTorch versions. We also made use of caching. [Check pre-commit example action workflow](https://github.com/mmmmaja/starfishDetection/actions/runs/12907978581) shows one of our GitHub actions workflows. Pre-commits explained earlier help keep the code base clean and readable.
+
+Furthermore, we had a dependabot that helps automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
 
 ## Running code and tracking experiments
 
@@ -593,7 +595,7 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
-We used s247157's credits during the course, totalling $8.51 used for the project. This comes from $5.97 spent on Cloud Storage, $1.71 spent on Cloud Run, $0.75 spent on the Artifact Registry, $0.05 spent on Vertex AI, and $0.02 spent on Networking. Overall, we didn't spend many credits due to issues with getting the quota increased for Vertex AI GPUs and then being unable to access them. The Faster R-CNN model was hard to run locally for more than just a few batches due to the size of the model and also complications with MPS if you wanted to run it on GPU with Mac. So instead, we trained a model on Vertex AI using CPUs and we used a university HPC for GPU resources.
+We used s247157's credits during the project, totalling $8.51 used for the project. This comes from $5.97 spent on Cloud Storage, $1.71 spent on Cloud Run, $0.75 spent on the Artifact Registry, $0.05 spent on Vertex AI, and $0.02 spent on Networking. Overall, we didn't spend many credits due to issues with getting the quota increased for Vertex AI GPUs and then being unable to access them. The Faster R-CNN model was hard to run locally for more than just a few batches due to the size of the model and also complications with MPS if you wanted to run it on GPU with Mac. So instead, we trained a model on Vertex AI using CPUs and we used a university HPC for GPU resources.
 
 ### Question 28
 

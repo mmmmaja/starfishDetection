@@ -20,7 +20,7 @@ Follow these steps to get predictions on an image.
 1. Click `Browse files`.
 ![app-image1](figures/app-image1.png)
 
-2. Select your desired image. 
+2. Select your desired image.
 ![app-image2](figures/app-image2.png)
 
 3. You should then see the image you selected appear.
