@@ -1,17 +1,16 @@
+import ast
+import io
+import json
 from pathlib import Path
+
 import anyio
 import nltk
-import pandas as pd
-from fastapi.responses import HTMLResponse
 import numpy as np
 import pandas as pd
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from google.cloud import storage
 from PIL import Image
-import io
-from fastapi import FastAPI
-import json
-import ast
-
 
 BUCKET_NAME = "starfish-detection-data"
 
@@ -19,21 +18,22 @@ BUCKET_NAME = "starfish-detection-data"
 Task: Deploy a drift detection API to the cloud (M27)
 """
 
+
 def get_html(html_table, title):
     return f"""
     <html>
         <head>
             <title>{title}</title>
             <!-- Bootstrap CSS -->
-            <link 
-                rel="stylesheet" 
-                href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" 
-                integrity="sha384-JcKb8q3iqJ61gNVX38n5IYjPjzq3jVV0T1J5i5x6d11s5jzVlae6q9wl8LCjhT1X" 
+            <link
+                rel="stylesheet"
+                href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+                integrity="sha384-JcKb8q3iqJ61gNVX38n5IYjPjzq3jVV0T1J5i5x6d11s5jzVlae6q9wl8LCjhT1X"
                 crossorigin="anonymous">
-            <link 
-                rel="stylesheet" 
-                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" 
-                integrity="sha512-iBBXm8fW90+nuLcSKVBQOUCmg2nQ93Lj6V1QGNd/axh4K0bDjO/baMQVFcE6QeJ3Jxk4a+X9JfSZVv2y+I3BMQ==" 
+            <link
+                rel="stylesheet"
+                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+                integrity="sha512-iBBXm8fW90+nuLcSKVBQOUCmg2nQ93Lj6V1QGNd/axh4K0bDjO/baMQVFcE6QeJ3Jxk4a+X9JfSZVv2y+I3BMQ=="
                 crossorigin="anonymous" />
             <style>
                 body {{
@@ -90,7 +90,6 @@ def get_html(html_table, title):
     """
 
 
-
 def extract_image_features(dataset):
     """
     Extract basic image features from a set of images (brightness, contrast, sharpness)
@@ -98,9 +97,15 @@ def extract_image_features(dataset):
     """
 
     feature_columns = [
-        "Avg Brightness R", "Contrast R", "Sharpness R",
-        "Avg Brightness G", "Contrast G", "Sharpness G",
-        "Avg Brightness B", "Contrast B", "Sharpness B",
+        "Avg Brightness R",
+        "Contrast R",
+        "Sharpness R",
+        "Avg Brightness G",
+        "Contrast G",
+        "Sharpness G",
+        "Avg Brightness B",
+        "Contrast B",
+        "Sharpness B",
     ]
 
     features = []
@@ -159,7 +164,6 @@ def extract_target_features(targets_df):
     targets = []
 
     for idx, row in targets_df.iterrows():
-
         annotations = row.get("annotations", "")
 
         parsed_annotations = parse_annotations(annotations)
@@ -197,13 +201,13 @@ def download_images(n: int = 5, prefix: str = "") -> None:
     bucket = client.get_bucket(BUCKET_NAME)
     print(f"Acessing the bucket: {bucket}")
     blobs = bucket.list_blobs(prefix="")
-    
+
     images = []
     idx = 0
     for blob in blobs:
-        if blob.name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+        if blob.name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif")):
             img_bytes = blob.download_as_bytes()
-            img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+            img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
             images.append(img)
             idx += 1
             if idx >= n:
@@ -219,18 +223,19 @@ def download_targets(n: int = 5, prefix: str = "data/raw/train.csv") -> None:
     client = storage.Client()
     bucket = client.get_bucket(BUCKET_NAME)
     blob = bucket.blob(prefix)
-    
+
     if not blob.exists():
         raise FileNotFoundError(f"The file {prefix} does not exist in the bucket {BUCKET_NAME}.")
     else:
         print(f"Downloading {prefix} from the bucket {BUCKET_NAME}.")
 
     csv_bytes = blob.download_as_bytes()
-    csv_str = csv_bytes.decode('utf-8')
+    csv_str = csv_bytes.decode("utf-8")
     df = pd.read_csv(io.StringIO(csv_str))
     # Get the first N rows
     df = df.head(n)
     return df
+
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -242,19 +247,18 @@ async def get_report_images(n: int = 5):
     Generate and return the report.
     """
     data = download_images(n)
-    
+
     # Get the statistics on the images
     image_features = extract_image_features(data)
     print(image_features)
 
-     # Convert DataFrame to HTML
-    html_table = image_features.to_html(classes='table table-striped', border=0)
+    # Convert DataFrame to HTML
+    html_table = image_features.to_html(classes="table table-striped", border=0)
     html_content = get_html(html_table, "Image Features Report")
-    
+
     return HTMLResponse(content=html_content, status_code=200)
 
     # run_analysis(training_data, prediction_data)
-
 
     # async with await anyio.open_file("monitoring.html", encoding="utf-8") as f:
     #     html_content = f.read()
@@ -268,15 +272,15 @@ async def get_report_targets(n: int = 5):
     Generate and return the report.
     """
     data = download_targets(n)
-    
+
     # Get the statistics on the images
     target_features = extract_target_features(data)
     # Convert DataFrame to HTML
-    html_table = target_features.to_html(classes='table table-striped', border=0)
-    
+    html_table = target_features.to_html(classes="table table-striped", border=0)
+
     # Optional: Add some basic HTML structure
     html_content = get_html(html_table, "Target Features Report")
-    
+
     return HTMLResponse(content=html_content, status_code=200)
 
     # run_analysis(trainidang_data, prediction_data)
@@ -285,6 +289,3 @@ async def get_report_targets(n: int = 5):
     #     html_content = f.read()
 
     # return HTMLResponse(content=html_content, status_code=200)
-
-
-
