@@ -17,4 +17,4 @@ Follow these steps to get predictions on an image.
 
 2. Select your desired image. You should then see the image you selected appear.
 
-3. 
+3.
