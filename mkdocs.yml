@@ -16,3 +16,4 @@ plugins:
 nav:
   - Home: index.md
   - Training: training.md
+  - Application: application.md 
