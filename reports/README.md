@@ -594,6 +594,12 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 > Answer:
 
 - s195398 had used a little more than $11.
+- s250797 used $0.01
+- s194242 used $
+- s243077 used $
+- s247157 used $
+
+Overall we didn't spend many credits due to some issues with getting quota increased for vertex gpus taking up to two working daya to get it increased which meant we trained alot on a hpc cluster. We did however manage to train on vertex using CPU instead of GPU. The Faster R-CNN model was hard to run locally for a more than just a few batches due to size of the model but also complications with mps if you wanted to run it on GPU with mac.
 
 ### Question 28
 
@@ -673,3 +679,5 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 s250797 did training script structure, hydra config files and wandb logging
 s195398 did work did pre-commit hooks, ONNX and made a few API tests.
 s194242 did work of the profiling, logging and the evaluate scripts.
+
+We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code
