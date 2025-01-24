@@ -85,9 +85,9 @@ will check the repositories and the code to verify your answers.
 * [X] Create a trigger workflow for automatically building your docker images (M21)
 * [X] Get your model training in GCP using either the Engine or Vertex AI (M21)
 * [X] Create a FastAPI application that can do inference using your model (M22)
-* [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
-* [ ] Write API tests for your application and setup continues integration for these (M24)
-* [ ] Load test your application (M24)
+* [X] Deploy your model in GCP using either Functions or Run as the backend (M23)
+* [X] Write API tests for your application and setup continues integration for these (M24)
+* [X] Load test your application (M24)
 * [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 * [X] Create a frontend for your API (M26)
 
@@ -106,10 +106,11 @@ will check the repositories and the code to verify your answers.
 
 * [ ] Write some documentation for your application (M32)
 * [ ] Publish the documentation to GitHub Pages (M32)
-* [ ] Revisit your initial project description. Did the project turn out as you wanted?
+* [X] Revisit your initial project description. Did the project turn out as you wanted?
+
 The project largely turned out as we wanted. The main change we made was to use the FasterRCNN model instead of the YOLO11 model. We made this switch primarily because it did not seem to be straightforward to modify the architecture of YOLO11 to support two classes, whereas this was an input parameter to FasterRCNN.
 * [ ] Create an architectural diagram over your MLOps pipeline
-* [ ] Make sure all group members have an understanding about all parts of the project
+* [X] Make sure all group members have an understanding about all parts of the project
 * [X] Uploaded all your code to GitHub
 
 ## Group information
@@ -180,7 +181,7 @@ We managed dependencies in our project by using requirements files. Whenever we 
 >
 > Answer:
 
-We use hydra for config files and make use the instanciate function for the main 4 objects: the pytorch lightning module, data module and trainer and the wandb logger
+We use hydra for config files and make use the instantiate function for the main 4 objects: the pytorch lightning module, data module and trainer and the wandb logger
 code:
 - Code for the pytorch lightning module is in src/starfish/model.py
 - Code for the pytorch lightning data module is in src/starfish/data.py
@@ -261,9 +262,7 @@ Even if we had a 100% code coverage we are not guarenteed to be error free. You 
 >
 > Answer:
 
-Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch.
-
-Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in question 6.
+Yes, we made use of both branches and PRs in our project. Each team member worked on separate feature branches dedicated to specific tasks. This minimized code conflicts and ensured that the main branch remain stable. Once a task was completed, the developer would create a pull request to merge their feature branch into the main branch. Before merging, the PR underwent a code review process where other team members would examine the changes for quality, consistency, and potential issues. Additionally, using PRs allowed us to run automated tests and integrations checks, ensuring that new code did not introduce bugs or break existing functionalities. This was also discussed in question 6.
 
 ### Question 10
 
@@ -314,7 +313,7 @@ Our continuous integration setup included unit testing, linting, and data monito
 >
 > Answer:
 
-As mentioned in question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
+As mentioned in Question 5 we use Hydra for our config files so all the default parameters are set in the main_config which defines which config to use as default. For changing the configs we can use Hydra from the terminal like
 
 ```bash
 train data.batch_size=128
@@ -365,7 +364,13 @@ torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can
 >
 > Answer:
 
---- question 14 fill here ---
+We made use of W&B for experiment tracking. The faster R-CNN uses a sum of different losses which we all track and we implemented Mean-Average-Precision (mAP) and Intersection Over Union (IoU) using torchmetrics we end up tracking a total of 39 different metrics.
+However not all the losses from the faster R-CNN seam to be applicaple like map_per_classes as we only have one class so it stays at -1 during all of training. We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top n predictions with the highest confidence score.(The images are from the start of training so very little overlap with predictions and targets)
+Logging images with the predictions and targets on allows us to visually see if the model is learning what we want where it can be harder to understand what a mAP of 0.04 compared to a map of 0.01 means.
+Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
+[image_logging](figures/image_logging.png)
+[loss_logging](figures/loss_logging.png)
+[sweep](figures/sweep.png)
 
 ### Question 15
 
@@ -380,7 +385,7 @@ torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can
 >
 > Answer:
 
---- question 15 fill here ---
+We used docker in our project to containerize the training, backend, and frontend portions of the project. We wrote one dockerfile for each of these parts and then set up automatic building and pushing using Cloud Build and a trigger that listened for pushes to the master branch of our repository. All of our images were stored in the Artifact Registry. We then accessed our training image with Vertex AI to set up training runs and used our backend and frontend images in Cloud Run for deployment of our API and application. Our training image can be run with the `invoke train-vertex` command. Our backend and frontend images can be run on the cloud with `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` and `gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080`, respectively. You can find all of our dockerfiles in the [dockerfiles](../dockerfiles) subfolder of our repository. For example, our training dockerfile is [here](../dockerfiles/train.dockerfile).
 
 ### Question 16
 
@@ -413,7 +418,7 @@ Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97%
 >
 > Answer:
 
---- question 17 fill here ---
+
 Bucket is used to store objects such as data or models. We created a bucket for our data in GCP and another one for the model we deploy.
 Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
 Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.
@@ -491,13 +496,11 @@ CLOUD RUN ADD HERE
 >
 > Answer:
 
-We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API features two main endpoints:
-1. `\inference\` endpoint:
-   When a user uploads an image the API loads the model, executes predictions to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
-2. `\show\` endpoint:
-    Instead of returning raw predictions, this endpoint overlays the predicted bounding boxes and confidence scores directly onto the submitted image. Through this endpoint we were able to visually inspect model's detections and is especially useful for testing.
+We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
 
 Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
+
+Furthermore we built a frontend for this API using the `streamlit` library. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
 
 ### Question 24
 
@@ -578,7 +581,8 @@ Additionally we automated the build of the Docker image required for the backend
 >
 > Answer:
 
---- question 28 fill here ---
+Yes, we implemented a frontend for our API to provide users with an intuitive and interactive interface. It was build using the  `streamlit` library.
+When a user uploads an image, the frontend sends it to the backend API, which processes the image to detect starfish and returns bounding boxes along with confidence scores. The bounding boxes are then overlayed on the original image, and displayed. Additionally, we included a histogram that shows the distribution of confidence scores.
 
 ### Question 29
 

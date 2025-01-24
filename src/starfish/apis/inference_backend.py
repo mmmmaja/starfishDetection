@@ -10,6 +10,8 @@ from contextlib import asynccontextmanager
 import albumentations as A
 import cv2
 import numpy as np
+import onnxruntime as rt
+import requests
 import torch
 from albumentations.pytorch.transforms import ToTensorV2
 from fastapi import FastAPI, File, UploadFile
@@ -23,19 +25,28 @@ This is the backend service that retrieves the prediction from the image
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> None:
+async def lifespan(app: FastAPI):
     """
     Context manager to handle the lifespan of the FastAPI application
     :param app: The FastAPI application
     """
-    global model, device
+    global model, onnx_session, device
 
-    # Load the model
     model_path = "https://storage.googleapis.com/starfish-model/model.ckpt"
+    cloud_onnx_path = "https://storage.googleapis.com/faster-rcnn-onnx/FasterRCNN.onnx"
+    local_onnx_path = "FasterRCNN.onnx"
 
     try:
-        # Load the model
+        # Load torch model
         model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)
+
+        # Load ONNX model
+        response = requests.get(cloud_onnx_path)
+        with open(local_onnx_path, "wb") as f:
+            f.write(response.content)
+
+        providers = ["CUDAExecutionProvider"] if torch.cuda.is_available() else ["CPUExecutionProvider"]
+        onnx_session = rt.InferenceSession(local_onnx_path, providers=providers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
 
@@ -45,7 +56,7 @@ async def lifespan(app: FastAPI) -> None:
 
     yield
     # Clean up
-    del model, device
+    del model, onnx_session, device
 
 
 # Create the FastAPI app
@@ -64,7 +75,7 @@ def preprocess_image(image: np.ndarray) -> torch.Tensor:
     # Make it of a type double
     image = image.astype("float32")
     transform = A.Compose(
-        [A.Resize(640, 640), ToTensorV2()],
+        [A.Resize(800, 800), ToTensorV2()],
     )
     return transform(image=image)["image"]
 
@@ -109,7 +120,39 @@ async def inference(data: UploadFile = File(...)) -> dict:
             model.eval()
             # Prediction is the bounding boxes and the scores
             prediction = model.model(batch.to(device))
-            print(prediction)
             return {"scores": prediction[0]["scores"].tolist(), "boxes": prediction[0]["boxes"].tolist()}
     except Exception as e:
         raise HTTPException(status_code=500) from e
+
+
+@app.post("/onnx-inference/")
+async def onnx_inference(data: UploadFile = File(...)) -> dict:
+    """
+    Perform inference using the ONNX model.
+    :param data: The uploaded image file
+    :return: The prediction from the ONNX model
+    """
+
+    # Read the image once it was uploaded
+    with open("image.jpg", "wb") as image:
+        content = await data.read()
+        image.write(content)
+        image.close()
+
+    # Preprocess the image to match the model's input requirements
+    image = cv2.imread("image.jpg")
+    if image is None:
+        raise HTTPException(status_code=400, detail="Invalid image file.")
+
+    image_processed = preprocess_image(image)
+    # Add a batch dimension
+    batch = image_processed.unsqueeze(0).numpy()
+
+    try:
+        # Perform inference
+        input_name = onnx_session.get_inputs()[0].name
+        prediction = onnx_session.run(None, {input_name: batch})
+
+        return {"scores": prediction[2].tolist(), "boxes": prediction[0].tolist()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ONNX inference failed: {str(e)}")

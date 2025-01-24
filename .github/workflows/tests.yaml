@@ -31,7 +31,6 @@ jobs:
           pip install -r requirements.txt
           pip install torch==${{ matrix.pytorch-version }}
           pip install -e .
-          pip install ruff
       - name: Run tests
         run: |
           pytest -v
@@ -39,3 +38,13 @@ jobs:
         run: ruff check src
       - name: Ruff format
         run: ruff format src
+      - name: Run load test on deployed model
+        env:
+          DEPLOYED_MODEL_URL: https://backend-638730968773.us-central1.run.app
+        run: |
+          locust -f tests/performancetests/locustfile.py --headless -u 100 -r 10 --run-time 10m --host=$DEPLOYED_MODEL_URL --csv=/locust/results
+      - name: Upload locust results
+        uses: actions/upload-artifact@v4
+        with:
+          name: locust-results
+          path: /locust/results

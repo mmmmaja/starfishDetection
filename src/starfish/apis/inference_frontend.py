@@ -123,16 +123,14 @@ def plot_confidence_histogram(data: torch.Tensor, bins: int = 20) -> plt.Figure:
     :param theme: 'dark' or 'light' theme
     :return: The histogram plot
     """
-    plt.style.use("dark_background")
-
     fig, ax = plt.subplots(figsize=(8, 4), facecolor="none")
 
     # Create the histogram
-    n, bins, patches = ax.hist(data, bins=bins, edgecolor="white", alpha=0.7, linewidth=0.7, color="deepskyblue")
+    n, bins, patches = ax.hist(data, bins=bins, edgecolor="black", alpha=0.7, linewidth=0.7, color="deepskyblue")
 
     # Set title and labels with appropriate colors
-    title_color = "white"
-    label_color = "white"
+    title_color = "black"
+    label_color = "black"
 
     ax.set_title("Confidence Scores Distribution", color=title_color, fontsize=16, pad=15)
     ax.set_xlabel("Confidence Score", color=label_color, fontsize=12, labelpad=10)
