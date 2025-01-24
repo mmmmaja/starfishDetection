@@ -370,6 +370,7 @@ Logging images with the predictions and targets on allows us to visually see if 
 Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
 [image_logging](figures/image_logging.png)
 [loss_logging](figures/loss_logging.png)
+[sweep](figures/sweep.png)
 
 ### Question 15
 
