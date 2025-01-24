@@ -45,6 +45,27 @@ Run a container spawned from the docker image
 ```bash
 invoke run-train-image
 ```
+Build an image for the backend and push it to the cloud
+```bash
+invoke backend-image-to-cloud
+```
+Build an image for the frontend and push it to the cloud
+```bash
+invoke frontend-image-to-cloud
+```
+Test a docker image locally
+```bash
+docker run --rm -p 8080:8080 -e "PORT=8080" IMAGE_NAME
+```
+Deploy the backend
+```bash
+invoke deploy-backend
+```
+Deploy the frontend
+```bash
+invoke deploy-frontend
+```
+
 
 ## Vertex AI
 Get the Docker image built from `train.dockerfile` in the Artifact Registry on Google Cloud, for example by creating a trigger and using the `cloudbuild.yaml` file. Then you can train a model using that Docker image through the Vertex AI service. This also automatically logs the training to Wandb if your API key has been stored as a secret in Google Cloud.

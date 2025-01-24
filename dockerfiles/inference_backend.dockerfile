@@ -18,27 +18,6 @@ COPY requirements.txt requirements.txt
 COPY pyproject.toml pyproject.toml
 
 RUN --mount=type=cache,target=/root/.cache/pip pip install -r requirements.txt
-# Set environment variable for PORT with a default value
 ENV PORT=8080
 EXPOSE $PORT
 CMD exec uvicorn app.inference_backend:app --host 0.0.0.0 --port $PORT
-
-# Instructions on how to build and run the image and then deploy the API to the cloud
-
-# 1. Build the image
-    # docker build -t backend:latest -f dockerfiles/inference_backend.dockerfile .
-
-# 2. Run image
-    # docker run --rm -p 8080:8080 -e "PORT=8080" backend:latest
-
-# 3. Go to http://localhost:8080/docs to test the API
-
-# 4. Deploy to the cloud:
-
-    # docker tag backend:latest us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
-    # docker push us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest
-
-    # Verify the images in the artifact registry
-    # gcloud artifacts docker images list us-central1-docker.pkg.dev/starfish-detection/frontend-backend
-
-    # gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080

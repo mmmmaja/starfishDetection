@@ -457,7 +457,7 @@ We used Cloud Run for creating docker containers for our backend and frontend.
 >
 > Answer:
 
-We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end.
+We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end. Much of the training ended up being run on a hpc cluster one of the group members have access to with nvidia a100 gpus.
 
 ### Question 19
 
@@ -519,11 +519,9 @@ We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line 
 >
 > Answer:
 
-We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
+We did manage to write an inference API for our model using the FastAPI library. We hosted the trained model in a Google Cloud Storage Bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
 
-Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
-
-Furthermore we built a frontend for this API using the `streamlit` library. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+Additionally we automated the build of the Docker image required for deploying the backend. Every commit to the main branch triggers an automatic build of the Dockerfile and automatic pushing to the Artifact Registry. This simplified our workflow and minimized potential deployment errors.
 
 ### Question 24
 
@@ -539,7 +537,12 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 24 fill here ---
+We did deploy our API in the cloud. Once the backend docker image was in the Artifact Registry, we used the `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` command for deployment. This deployed service is available at [https://backend-638730968773.us-central1.run.app](https://backend-638730968773.us-central1.run.app) and can be invoked through a curl command:
+```bash
+curl -X 'POST' 'https://backend-638730968773.us-central1.run.app/inference/' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'data=@PATH_TO_IMAGE;type=image/jpeg'
+```
+Furthermore, we built a frontend for this deployed API using the `streamlit` library. So a user can also invoke the API by uploading an image to the webpage `https://frontend-638730968773.us-central1.run.app`. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+
 
 ### Question 25
 

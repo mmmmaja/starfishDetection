@@ -1,34 +1,15 @@
-<<<<<<< HEAD
-import anyio
-import pandas as pd
-from fastapi.responses import HTMLResponse
-from fastapi import FastAPI
-import numpy as np
-from evidently.metrics import DataDriftTable, ColumnDriftMetric
-from evidently.report import Report
-import json
 import ast
+import json
 import os
-import cv2
-
-=======
-import ast
-import io
-import json
-from pathlib import Path
 
 import anyio
 import cv2
-import nltk
 import numpy as np
 import pandas as pd
 from evidently.metrics import ColumnDriftMetric, DataDriftTable
 from evidently.report import Report
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from google.cloud import storage
-from PIL import Image
->>>>>>> e8297db1eaddfa595e2718c1d31c4f873fdbf450
 
 # Where the training data is stored
 REFERENCE_BUCKET_URL = "/gcs/starfish-detection-data/"
@@ -260,8 +241,6 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "data/raw/train_
     :param prefix: The prefix of the files to download
     :return: A list of PIL Image objects
     """
-<<<<<<< HEAD
-
     data_path = f"{bucket_name}/{prefix}"
 
     images, idx = [], 0
@@ -271,22 +250,6 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "data/raw/train_
                 idx += 1
                 if idx >= n:
                     break
-=======
-    client = storage.Client()
-    bucket = client.get_bucket(bucket_name)
-    print(f"Acessing the bucket: {bucket}")
-    blobs = bucket.list_blobs(prefix="")
-
-    images, idx = [], 0
-    for blob in blobs:
-        if blob.name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif")):
-            img_bytes = blob.download_as_bytes()
-            img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-            images.append(img)
-            idx += 1
-            if idx >= n:
-                break
->>>>>>> e8297db1eaddfa595e2718c1d31c4f873fdbf450
     print(f"Download image data: ({len(images)})")
     return images
 
@@ -299,11 +262,9 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     :param prefix: The prefix of the files to download
     :return: A DataFrame containing the target data
     """
-<<<<<<< HEAD
-
     data_path = f"{bucket_name}/{prefix}"
     try:
-        #Read the csv file
+        # Read the csv file
         df = pd.read_csv(data_path)
         print(f"Download target data: ({len(df)})")
         df = df.head(n)
@@ -311,24 +272,6 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     except Exception as e:
         print(f"Error downloading target data: {e}")
         return None
-
-=======
-    client = storage.Client()
-    bucket = client.get_bucket(bucket_name)
-    blob = bucket.blob(prefix)
-
-    if not blob.exists():
-        raise FileNotFoundError(f"The file {prefix} does not exist in the bucket {bucket_name}.")
-    else:
-        print(f"Downloading {prefix} from the bucket {bucket_name}.")
-
-    csv_bytes = blob.download_as_bytes()
-    csv_str = csv_bytes.decode("utf-8")
-    df = pd.read_csv(io.StringIO(csv_str))
-    # Get the first N rows
-    df = df.head(n)
-    return df
->>>>>>> e8297db1eaddfa595e2718c1d31c4f873fdbf450
 
 
 # Initialize FastAPI app
@@ -342,13 +285,8 @@ async def get_report_images(n: int = 5) -> HTMLResponse:
     :param n: The number of images to include in the report
     :return: The HTML response containing the report
     """
-<<<<<<< HEAD
     data = download_images(REFERENCE_BUCKET_URL, n)
 
-=======
-    data = download_images(REFERENCE_BUCKET_NAME, n)
-
->>>>>>> e8297db1eaddfa595e2718c1d31c4f873fdbf450
     # Get the statistics on the images
     image_features = extract_image_features(data)
 
@@ -366,13 +304,8 @@ async def get_report_targets(n: int = 5) -> HTMLResponse:
     :param n: The number of targets to include in the report
     :return: The HTML response containing the report
     """
-<<<<<<< HEAD
     data = download_targets(REFERENCE_BUCKET_URL, n)
 
-=======
-    data = download_targets(REFERENCE_BUCKET_NAME, n)
-
->>>>>>> e8297db1eaddfa595e2718c1d31c4f873fdbf450
     # Get the statistics on the images
     target_features = extract_target_features(data)
 
@@ -403,8 +336,8 @@ async def get_drift_report(n: int = 5) -> HTMLResponse:
     """
 
     # Download the images from the GCP buckets
-    reference_images = download_images(REFERENCE_BUCKET_NAME, n)
-    current_images = download_images(CURRENT_BUCKET_NAME, n)
+    reference_images = download_images(REFERENCE_BUCKET_URL, n)
+    current_images = download_images(CURRENT_BUCKET_URL, n)
 
     # Extract features from the datasets
     reference_data = extract_image_features(reference_images)
