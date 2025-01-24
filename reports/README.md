@@ -314,6 +314,12 @@ Our continuous integration setup included unit testing, linting, and data monito
 
 Furthermore, we had a dependabot that helps automate dependency updates in our project. It scans the project’s dependency manifest files (e.g., requirements.txt, package.json, or pyproject.toml) and checks for new versions of libraries or dependencies. Dependabot then creates pull requests with updates, allowing us to review and merge them.
 
+We made use of unit tests and integration tests to ensure that code changes didn't break any crucial functionality. We have unit tests for the model, dataset, data loading, API, backend, frontend, and more. These comprehensive tests provided confidence in maintaining a robust system.
+
+We used Ruff with our pre-commit hooks to ensure good coding practices and consistent linting. Additionally, we implemented GitHub workflows for model staging, automated testing, and deployment, which streamlined our development and deployment pipelines while ensuring quality and reliability at every stage.
+
+We didn't manage to get to the point where we were able in implement continious training workflow.
+
 ## Running code and tracking experiments
 
 > In the following section we are interested in learning more about the experimental setup for running your code and
