@@ -139,8 +139,8 @@ async def inference(data: UploadFile = File(...)) -> dict:
 
         return {
             "scores": prediction[0]["scores"].tolist(),
-            "boxes": prediction[0]["boxes"].tolist(),
-            "image_url": blob.public_url,  # If you made the blob public
+            "boxes": prediction[0]["boxes"].tolist()
+            #"image_url": blob.public_url,  # If you made the blob public
         }
 
     except ValueError as ve:
