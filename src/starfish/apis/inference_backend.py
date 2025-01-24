@@ -5,6 +5,8 @@ import sys
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 
+import os
+import uuid
 from contextlib import asynccontextmanager
 
 import albumentations as A
@@ -16,11 +18,8 @@ import torch
 from albumentations.pytorch.transforms import ToTensorV2
 from fastapi import FastAPI, File, UploadFile
 from fastapi.exceptions import HTTPException
+from google.cloud import storage
 from model import FasterRCNNLightning
-from google.cloud import storage 
-import os
-import uuid
-
 
 """
 Create a FastAPI application that can do inference using the model (M22)
@@ -55,7 +54,7 @@ async def lifespan(app: FastAPI):
         onnx_session = rt.InferenceSession(local_onnx_path, providers=providers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
-    
+
     print("Model loaded successfully.")
 
     # Configure the device
@@ -107,7 +106,6 @@ async def root() -> dict:
     return {"message": "Hello from the backend!"}
 
 
-
 @app.post("/inference/")
 async def inference(data: UploadFile = File(...)) -> dict:
     """
@@ -137,20 +135,20 @@ async def inference(data: UploadFile = File(...)) -> dict:
         with torch.no_grad():
             model.eval()
             prediction = model.model(batch.to(device))
-        
+
         # Upload the image to GCS
         unique_id = str(uuid.uuid4())
         file_extension = os.path.splitext(data.filename)[1] or ".jpg"  # Default to .jpg if no extension
         gcs_filename = f"uploaded_images/{unique_id}{file_extension}"
         blob = bucket.blob(gcs_filename)
         blob.upload_from_string(image_bytes, content_type=data.content_type)
-        
+
         print(f"Uploaded image to {gcs_filename}")
 
         return {
             "scores": prediction[0]["scores"].tolist(),
             "boxes": prediction[0]["boxes"].tolist(),
-            "image_url": blob.public_url  # If you made the blob public
+            "image_url": blob.public_url,  # If you made the blob public
         }
 
     except ValueError as ve:
