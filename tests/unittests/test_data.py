@@ -22,7 +22,7 @@ def test_dataset():
 
 @pytest.mark.skipif(not os.path.exists(_PATH_DATA), reason="Data files not found")
 def test_datamodule():
-    datamodule = StarfishDataModule(data_from_bucket=False)
+    datamodule = StarfishDataModule(data_from_bucket=False, subset=0.002)
     datamodule.setup()
     train_dataloader = datamodule.train_dataloader()
     val_dataloader = datamodule.val_dataloader()
