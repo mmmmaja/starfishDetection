@@ -1,9 +1,8 @@
 import torch
+import wandb
 from pytorch_lightning.callbacks import Callback
 from torchmetrics.detection import IntersectionOverUnion
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
-
-import wandb
 
 
 class WandbImageLoggerCallback(Callback):
