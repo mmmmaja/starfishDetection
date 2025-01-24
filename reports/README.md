@@ -435,7 +435,7 @@ Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97%
 > Answer:
 
 
-We used Cloud Build with a Trigger to automatically build our dockerfiles and then push the images to the Artifact Registry, which is for storing software artifacts such as Docker images. 
+We used Cloud Build with a Trigger to automatically build our dockerfiles and then push the images to the Artifact Registry, which is for storing software artifacts such as Docker images.
 Cloud Bucket is used to store objects such as data or models. We created a bucket for our data in GCP, one for the PyTorch model we deploy, one for the ONNX version of the model, and one to store data fed into the model during deployment for monitoring purposes.
 Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
 Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.
@@ -498,7 +498,7 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
-Yes, we trained our model in the cloud using Vertex AI. We chose this over the Compute Engine so the VM would close automatically when the training was complete. First, this required a `train` image built from `train.dockerfile` to be in the Artifact Registry, which we did automatically with a Cloud Build Trigger. We pointed to this image in `vertex_ai_config.yaml`, which also specified our desired machine type. Then we filled out `vertex_ai_train.yaml`, which fetched the Wandb API key stored as a Secret on the cloud and included the command to run a custom AI job. 
+Yes, we trained our model in the cloud using Vertex AI. We chose this over the Compute Engine so the VM would close automatically when the training was complete. First, this required a `train` image built from `train.dockerfile` to be in the Artifact Registry, which we did automatically with a Cloud Build Trigger. We pointed to this image in `vertex_ai_config.yaml`, which also specified our desired machine type. Then we filled out `vertex_ai_train.yaml`, which fetched the Wandb API key stored as a Secret on the cloud and included the command to run a custom AI job.
 We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line to start the job. We then went into the `Custom Jobs` tab in the `Training` section of Vertex AI to monitor the training process as well as the Wandb dashboard.
 
 ## Deployment
@@ -619,7 +619,17 @@ When a user uploads an image, the frontend sends it to the backend API, which pr
 >
 > Answer:
 
---- question 29 fill here ---
+When developing this project, we started in our local setup, where we created a repository from a CookieCutter template. There, we used PyTorch Lightning as boilerplate to avoid repetitive coding. We used this to develop our model. To develop our code, we had to use a lot of different packages, which is why having a dedicated Python environment is useful. We all used Conda. To optimize and debug our model, we used PyTorch profiler and PDB.
+
+To get the data locally for our model, we used Google Cloud data storage because we had problems with DVC pull. However, we could push data with DVC pull.
+
+The model can be configured in different ways depending on local or cloud-based use cases which is why we used Hydra. We also used one place where we used Typer instead of Hydra due to a misunderstanding. Before pushing we used Pre-Commit-Hooks. We of course used Git for version control.
+
+Once we have our model, we can convert it to ONNX to make it more lightweight and compatible with many other deep learning frameworks. We then store both our PyTorch model and ONNX model in a Google Cloud Bucket. This bucket also stores experimental loggings from Wandb. From this bucket, our FastAPI fetches the models depending on the requested endpoint from the frontend, which displays the result for the end-user.
+
+When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, the Cloud Run and Vertex AI can consume our containers. These can then save their predictions in the Google Cloud data storage for monitoring.
+
+![alt text](MLOPS-stack.png)
 
 ### Question 30
 
