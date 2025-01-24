@@ -5,17 +5,11 @@ import numpy as np
 import pytest
 import requests
 from fastapi.testclient import TestClient
-from starfish.apis.inference_backend import app
-
-client = TestClient(app)
-
 
 def test_backend():
-    with TestClient(app) as client:
-        response = client.get("/")
-        assert response.status_code == 200
-        assert response.json() == {"message": "Hello from the backend!"}
-
+    response = requests.get("https://backend-638730968773.us-central1.run.app/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Hello from the backend!"}
 
 @pytest.mark.asyncio
 async def test_inference_endpoint():
