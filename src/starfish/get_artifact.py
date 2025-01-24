@@ -1,4 +1,5 @@
 import torch  # Assuming it's a PyTorch model
+import wandb
 
 # # Initialize the W&B API
 # api = wandb.Api()
@@ -11,8 +12,6 @@ import torch  # Assuming it's a PyTorch model
 # # Path to the model checkpoint file
 # checkpoint_path = f"{artifact_dir}/model.ckpt"
 from model import FasterRCNNLightning
-
-import wandb
 
 starfish_model = FasterRCNNLightning(num_classes=2)
 # checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))

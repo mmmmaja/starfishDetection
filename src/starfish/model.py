@@ -3,11 +3,10 @@ from typing import Any, Dict
 import pytorch_lightning as pl
 import torch
 import torchvision
+import wandb
 from torchmetrics.detection import IntersectionOverUnion
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
-
-import wandb
 
 
 class FasterRCNNLightning(pl.LightningModule):
