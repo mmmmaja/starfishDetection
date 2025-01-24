@@ -246,6 +246,7 @@ In total we have 9 tests. We have implemented tests for the data in `tests/unitt
 > *code and even if we were then...*
 >
 > Answer:
+
 The total code coverage is 24%. We cover the most essential parts of the code like the API, model, and data. The files that doesn't have test coverage are files that are hard to test like callbacks or files that are used for tests like `image_drift.py`. Even if we had 100% code coverage we are not guaranteed to be error-free. You can have a high code coverage but have low test quality if the tests do not account for most of the use cases. But even if the quality of the tests were high, you can never be guaranteed an error-free project.
 
 ``` bash
