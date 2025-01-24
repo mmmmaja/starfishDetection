@@ -24,120 +24,89 @@ We plan to use one of the YOLO (You Only Look Once) models, which have been stat
 
 The directory structure of the project looks like this:
 ```txt
-├── .github/                  # Github actions and dependabot
-│   ├── dependabot.yaml
-│   └── workflows/
-│       └── tests.yaml
-├── configs/                  # Configuration files
-├── data/                     # Data directory
-│   ├── processed
-│   └── raw
-├── dockerfiles/              # Dockerfiles
-│   ├── api.Dockerfile
-│   └── train.Dockerfile
-├── docs/                     # Documentation
-│   ├── mkdocs.yml
-│   └── source/
-│       └── index.md
-├── models/                   # Trained models
-├── notebooks/                # Jupyter notebooks
-├── reports/                  # Reports
-│   └── figures/
-├── src/                      # Source code
-│   ├── project_name/
+.
+├── .dvc/                      # DVC configuration
+│   ├── config
+│   └── .gitignore
+├── .github/                   # GitHub workflows and automation
+│   ├── workflows/
+│   │   ├── cml_data.yaml
+│   │   ├── pre_commit.yaml
+│   │   ├── stage_model.yaml
+│   │   └── tests.yaml
+│   └── dependabot.yaml
+├── configs/                   # Configuration files
+│   ├── callbacks/
+│   │   ├── default_callbacks.yaml
+│   │   └── wandb_image_logger.yaml
+│   ├── experiment/
+│   │   ├── profile.yaml
+│   │   └── train_local.yaml
+│   ├── logger/
+│   │   └── wandb_logger.yaml
+│   ├── model/
+│   │   └── default_model.yaml
+│   ├── trainer/
+│   │   └── default_trainer.yaml
+│   ├── starfish_data.yaml
+│   ├── sweep_config.yaml
+│   ├── main_config.yaml
+│   └── vertex_ai_config.yaml
+├── dockerfiles/               # Dockerfiles for deployment and training
+│   ├── inference_backend.dockerfile
+│   ├── inference_frontend.dockerfile
+│   └── train.dockerfile
+├── docs/                      # Project documentation
+│   ├── README.md
+│   ├── application.md
+│   ├── index.md
+│   └── training.md
+├── reports/
+│   ├── figures/
+│   │   ├── image_logging.png
+│   │   ├── loss_logging.png
+│   │   └── sweep.png
+│   ├── README.md
+│   └── report.py
+├── src/                       # Source code
+│   ├── starfish/
 │   │   ├── __init__.py
-│   │   ├── api.py
+│   │   ├── callbacks.py
 │   │   ├── data.py
+│   │   ├── data_drift.html
 │   │   ├── evaluate.py
-│   │   ├── models.py
+│   │   ├── model.py
+│   │   ├── onnx_model.py
+│   │   ├── profile_forward_pass.py
 │   │   ├── train.py
 │   │   └── visualize.py
-└── tests/                    # Tests
-│   ├── __init__.py
-│   ├── test_api.py
-│   ├── test_data.py
-│   └── test_model.py
+├── tests/                     # Test suite
+│   ├── integrationtests/
+│   │   └── test_api.py
+│   ├── performancetests/
+│   │   └── locustfile.py
+│   └── unittests/
+│       ├── __init__.py
+│       ├── test_data.py
+│       └── test_model.py
+├── .dvcignore
+├── .gcloudignore
 ├── .gitignore
 ├── .pre-commit-config.yaml
 ├── LICENSE
-├── pyproject.toml            # Python project file
-├── README.md                 # Project README
-├── requirements.txt          # Project requirements
-├── requirements_dev.txt      # Development requirements
-└── tasks.py                  # Project tasks
+├── README.md                  # Project README
+├── cloudbuild.yaml            # Cloud Build configuration
+├── data.dvc                   # DVC tracking file
+├── mkdocs.yml                 # MkDocs configuration
+├── pyproject.toml             # Python project file
+├── requirements.txt           # Dependencies
+├── requirements_dev.txt       # Development dependencies
+├── tasks.py
+├── vertex_ai_train.yaml       # Vertex AI training configuration
+
 ```
 
 ## Documentation
-### Environment
-Create a dedicated environment to keep track of the packages for the project
-```bash
-conda create --name starfish-env python=3.11
-conda activate starfish-env
-pip install -r requirements.txt
-pip install -r requirements_dev.txt
-pip install -e .
-```
-
-### Data
-Download the data for the project from our Google Cloud Bucket, which requires the Google Cloud SDK.
-```bash
-invoke download-data
-```
-
-### Train
-Train with default arguments
-```bash
-train
-```
-Train with data downloaded from the bucket rather than accessing it directly from the cloud
-```bash
-train data.data_from_bucket=false
-```
-
-
-### Profiling
-Train with profiling
-```bash
-train profiling=True
-```
-Profile forward pass
-```bash
-invoke profile-forward-pass
-```
-
-### Docker
-Build the training dockerfile into a Docker image
-```bash
-invoke build-train-image
-```
-Run a container spawned from the docker image
-```bash
-invoke run-train-image
-```
-
-### Vertex AI
-Get the Docker image built from `train.dockerfile` in the Artifact Registry on Google Cloud, for example by creating a trigger and using the `cloudbuild.yaml` file. Then you can train a model using that Docker image through the Vertex AI service. This also automatically logs the training to Wandb if your API key has been stored as a secret in Google Cloud.
-```bash
-invoke train-vertex
-```
-
-### Wandb
-Login
-```bash
-wandb login
-```
-Hyperparameter sweep
-```bash
-invoke sweep
-wandb agent ENTITY/PROJECT_NAME/AGENT_ID
-```
-
-### Deploy application
-Deploy the application by running the backend and frontend Docker images in the Artifact Registry generated by the Cloud Build trigger and `cloudbuild.yaml`.
-```bash
-gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080
-gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080
-```
 
 ### Tests
 Run all tests and calculate coverage

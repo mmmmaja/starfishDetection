@@ -105,10 +105,6 @@ async def inference(data: UploadFile = File(...)) -> dict:
     :param data: The uploaded image file
     :return: The prediction from the model
     """
-    # Validate the uploaded file type
-    if not data.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
-
     try:
         # Read the image content
         image_bytes = await data.read()
@@ -140,7 +136,7 @@ async def inference(data: UploadFile = File(...)) -> dict:
         return {
             "scores": prediction[0]["scores"].tolist(),
             "boxes": prediction[0]["boxes"].tolist(),
-            "image_url": blob.public_url,  # If you made the blob public
+            # "image_url": blob.public_url,  # If you made the blob public
         }
 
     except ValueError as ve:
