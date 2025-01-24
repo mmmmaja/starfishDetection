@@ -457,7 +457,7 @@ We used Cloud Run for creating docker containers for our backend and frontend.
 >
 > Answer:
 
-We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end.
+We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end. Much of the training ended up being run on a hpc cluster one of the group members have access to with nvidia a100 gpus.
 
 ### Question 19
 
@@ -652,7 +652,7 @@ When pushing to Git, our GitHub actions execute their workflows. These workflows
 > Answer:
 
 Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
-Faster R-CNN model also gave a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions.
+Faster R-CNN model also gave us a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions.
 
 ### Question 31
 
