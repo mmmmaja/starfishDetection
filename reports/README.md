@@ -257,14 +257,13 @@ src/starfish/__init__.py                   0      0   100%
 src/starfish/callbacks.py                 47     47     0%   1-128
 src/starfish/data.py                     113     30    73%   41-43, 81-82, 87-88, 95, 121-126, 141-162, 173-179, 233
 src/starfish/evaluate.py                  32     32     0%   1-48
-src/starfish/image_drift.py              109    109     0%   1-284
 src/starfish/model.py                     60     34    43%   53-59, 67-81, 95-106, 117-118, 125-141
 src/starfish/onnx_model.py                28     28     0%   1-51
 src/starfish/profile_forward_pass.py      15     15     0%   1-21
 src/starfish/train.py                     43     43     0%   1-69
 src/starfish/visualize.py                 12     12     0%   1-18
 --------------------------------------------------------------------
-TOTAL                                    459    350    24%
+TOTAL                                    350    241    31%
 ```
 ### Question 9
 
