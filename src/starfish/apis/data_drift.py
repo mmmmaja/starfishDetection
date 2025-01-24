@@ -1,20 +1,19 @@
+import ast
+import io
+import json
 from pathlib import Path
+
 import anyio
+import cv2
 import nltk
-import pandas as pd
-from fastapi.responses import HTMLResponse
 import numpy as np
 import pandas as pd
+from evidently.metrics import ColumnDriftMetric, DataDriftTable
+from evidently.report import Report
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from google.cloud import storage
 from PIL import Image
-import io
-from fastapi import FastAPI
-from evidently.metrics import DataDriftTable, ColumnDriftMetric
-from evidently.report import Report
-import json
-import ast
-import cv2
-
 
 # Where the training data is stored
 REFERENCE_BUCKET_NAME = "starfish-detection-data"
@@ -24,6 +23,7 @@ CURRENT_BUCKET_NAME = "inference_api_data"
 """
 Task: Deploy a drift detection API to the cloud (M27)
 """
+
 
 def get_html(html_table: str, title: str) -> str:
     """
@@ -35,15 +35,15 @@ def get_html(html_table: str, title: str) -> str:
     <html>
         <head>
             <title>{title}</title>
-            <link 
-                rel="stylesheet" 
-                href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" 
-                integrity="sha384-JcKb8q3iqJ61gNVX38n5IYjPjzq3jVV0T1J5i5x6d11s5jzVlae6q9wl8LCjhT1X" 
+            <link
+                rel="stylesheet"
+                href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+                integrity="sha384-JcKb8q3iqJ61gNVX38n5IYjPjzq3jVV0T1J5i5x6d11s5jzVlae6q9wl8LCjhT1X"
                 crossorigin="anonymous">
-            <link 
-                rel="stylesheet" 
-                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" 
-                integrity="sha512-iBBXm8fW90+nuLcSKVBQOUCmg2nQ93Lj6V1QGNd/axh4K0bDjO/baMQVFcE6QeJ3Jxk4a+X9JfSZVv2y+I3BMQ==" 
+            <link
+                rel="stylesheet"
+                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+                integrity="sha512-iBBXm8fW90+nuLcSKVBQOUCmg2nQ93Lj6V1QGNd/axh4K0bDjO/baMQVFcE6QeJ3Jxk4a+X9JfSZVv2y+I3BMQ=="
                 crossorigin="anonymous" />
             <style>
                 body {{
@@ -125,44 +125,56 @@ def extract_image_features(dataset: list) -> pd.DataFrame:
     feature_list = []
     for img in dataset:
         img_np = np.array(img)
-        
+
         # Extract basic features
         avg_brightness_r = np.mean(img_np[:, :, 0])
         contrast_r = np.std(img_np[:, :, 0])
         sharpness_r = np.mean(np.abs(np.gradient(img_np[:, :, 0])))
-        
+
         avg_brightness_g = np.mean(img_np[:, :, 1])
         contrast_g = np.std(img_np[:, :, 1])
         sharpness_g = np.mean(np.abs(np.gradient(img_np[:, :, 1])))
-        
+
         avg_brightness_b = np.mean(img_np[:, :, 2])
         contrast_b = np.std(img_np[:, :, 2])
         sharpness_b = np.mean(np.abs(np.gradient(img_np[:, :, 2])))
-        
+
         # Color Histograms
         color_hist = extract_color_histograms(img_np)
-        
+
         # Combine all features
         combined_features = [
-            avg_brightness_r, contrast_r, sharpness_r,
-            avg_brightness_g, contrast_g, sharpness_g,
-            avg_brightness_b, contrast_b, sharpness_b
+            avg_brightness_r,
+            contrast_r,
+            sharpness_r,
+            avg_brightness_g,
+            contrast_g,
+            sharpness_g,
+            avg_brightness_b,
+            contrast_b,
+            sharpness_b,
         ] + color_hist
-        
+
         feature_list.append(combined_features)
-    
+
     # Define feature column names
     feature_columns = [
-        "Avg Brightness R", "Contrast R", "Sharpness R",
-        "Avg Brightness G", "Contrast G", "Sharpness G",
-        "Avg Brightness B", "Contrast B", "Sharpness B"
+        "Avg Brightness R",
+        "Contrast R",
+        "Sharpness R",
+        "Avg Brightness G",
+        "Contrast G",
+        "Sharpness G",
+        "Avg Brightness B",
+        "Contrast B",
+        "Sharpness B",
     ]
     # Add color histogram columns
     color_hist_bins = 32
-    for channel in ['R', 'G', 'B']:
+    for channel in ["R", "G", "B"]:
         for bin_idx in range(color_hist_bins):
-            feature_columns.append(f'ColorHist_{channel}_{bin_idx}')
-    
+            feature_columns.append(f"ColorHist_{channel}_{bin_idx}")
+
     # Create DataFrame
     feature_df = pd.DataFrame(feature_list, columns=feature_columns, index=range(len(dataset)))
     return feature_df
@@ -200,7 +212,6 @@ def extract_target_features(targets_df: pd.DataFrame) -> pd.DataFrame:
     targets = []
 
     for _, row in targets_df.iterrows():
-
         annotations = row.get("annotations", "")
         parsed_annotations = parse_annotations(annotations)
 
@@ -238,12 +249,12 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "") -> list:
     bucket = client.get_bucket(bucket_name)
     print(f"Acessing the bucket: {bucket}")
     blobs = bucket.list_blobs(prefix="")
-    
+
     images, idx = [], 0
     for blob in blobs:
-        if blob.name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+        if blob.name.lower().endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif")):
             img_bytes = blob.download_as_bytes()
-            img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+            img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
             images.append(img)
             idx += 1
             if idx >= n:
@@ -263,18 +274,19 @@ def download_targets(bucket_name: str, n: int = 5, prefix: str = "data/raw/train
     client = storage.Client()
     bucket = client.get_bucket(bucket_name)
     blob = bucket.blob(prefix)
-    
+
     if not blob.exists():
         raise FileNotFoundError(f"The file {prefix} does not exist in the bucket {bucket_name}.")
     else:
         print(f"Downloading {prefix} from the bucket {bucket_name}.")
 
     csv_bytes = blob.download_as_bytes()
-    csv_str = csv_bytes.decode('utf-8')
+    csv_str = csv_bytes.decode("utf-8")
     df = pd.read_csv(io.StringIO(csv_str))
     # Get the first N rows
     df = df.head(n)
     return df
+
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -288,14 +300,14 @@ async def get_report_images(n: int = 5) -> HTMLResponse:
     :return: The HTML response containing the report
     """
     data = download_images(REFERENCE_BUCKET_NAME, n)
-    
+
     # Get the statistics on the images
     image_features = extract_image_features(data)
 
     # Convert DataFrame to HTML
-    html_table = image_features.to_html(classes='table table-striped', border=0)
+    html_table = image_features.to_html(classes="table table-striped", border=0)
     html_content = get_html(html_table, "Image Features Report")
-    
+
     return HTMLResponse(content=html_content, status_code=200)
 
 
@@ -307,16 +319,16 @@ async def get_report_targets(n: int = 5) -> HTMLResponse:
     :return: The HTML response containing the report
     """
     data = download_targets(REFERENCE_BUCKET_NAME, n)
-    
+
     # Get the statistics on the images
     target_features = extract_target_features(data)
 
     # Convert DataFrame to HTML
-    html_table = target_features.to_html(classes='table table-striped', border=0)
-    
+    html_table = target_features.to_html(classes="table table-striped", border=0)
+
     # Optional: Add some basic HTML structure
     html_content = get_html(html_table, "Target Features Report")
-    
+
     return HTMLResponse(content=html_content, status_code=200)
 
 
@@ -353,12 +365,14 @@ async def get_drift_report(n: int = 5) -> HTMLResponse:
         return HTMLResponse(content="No images found in the buckets.", status_code=404)
 
     # Generate the drift report
-    report = Report(metrics=[
-        DataDriftTable(),
-        ColumnDriftMetric(column_name="Avg Brightness R"),
-        ColumnDriftMetric(column_name="Contrast R"),
-        ColumnDriftMetric(column_name="Sharpness R"),
-        ])
+    report = Report(
+        metrics=[
+            DataDriftTable(),
+            ColumnDriftMetric(column_name="Avg Brightness R"),
+            ColumnDriftMetric(column_name="Contrast R"),
+            ColumnDriftMetric(column_name="Sharpness R"),
+        ]
+    )
     report.run(reference_data=reference_data, current_data=current_data)
     report.save_html("monitoring.html")
 
@@ -366,6 +380,3 @@ async def get_drift_report(n: int = 5) -> HTMLResponse:
         html_content = await f.read()
 
     return HTMLResponse(content=html_content, status_code=200)
-
-
-
