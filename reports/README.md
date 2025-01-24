@@ -674,5 +674,6 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 s250797 did training script structure, hydra config files and wandb logging
 s195398 did work did pre-commit hooks, ONNX and made a few API tests.
 s194242 worked on the profiling, logging and the evaluate scripts.
+s243077 did work on the model and data scripts and on the APIs.
 
 We have used ChatGPT and GitHub Copilot Chat to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.
