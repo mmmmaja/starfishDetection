@@ -593,13 +593,7 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
-- s195398 had used a little more than $11.
-- s250797 used $0.01
-- s194242 used $
-- s243077 used $
-- s247157 used $
-
-Overall we didn't spend many credits due to some issues with getting quota increased for vertex gpus taking up to two working daya to get it increased which meant we trained alot on a hpc cluster. We did however manage to train on vertex using CPU instead of GPU. The Faster R-CNN model was hard to run locally for a more than just a few batches due to size of the model but also complications with mps if you wanted to run it on GPU with mac.
+We used s247157's credits during the course, totalling $8.51 used for the project. This comes from $5.97 spent on Cloud Storage, $1.71 spent on Cloud Run, $0.75 spent on the Artifact Registry, $0.05 spent on Vertex AI, and $0.02 spent on Networking. Overall, we didn't spend many credits due to issues with getting the quota increased for Vertex AI GPUs and then being unable to access them. The Faster R-CNN model was hard to run locally for more than just a few batches due to the size of the model and also complications with MPS if you wanted to run it on GPU with Mac. So instead, we trained a model on Vertex AI using CPUs and we used a university HPC for GPU resources.
 
 ### Question 28
 
