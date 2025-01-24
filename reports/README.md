@@ -667,4 +667,5 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 > *We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code.*
 > Answer:
 
-Moust Holmes did training script structure, hydra config files and wandb logging
+s250797 did training script structure, hydra config files and wandb logging
+s195398 did work did pre-commit hooks, ONNX and made a few API tests.
