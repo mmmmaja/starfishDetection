@@ -62,11 +62,19 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0
     # Resize the image
     image = cv2.resize(image, (640, 640))
 
+    processed_boxes, processed_scores = [], []
     # Draw the bounding boxes on the image
-    boxes_data = []
     for i, box in enumerate(keep_boxes):
         x1, y1, x2, y2 = box
-        boxes_data.append({"score": float(keep_scores[i]), "box": [int(x1), int(y1), int(x2), int(y2)]})
+        processed_boxes.append(
+            {
+                "x_min": round(x1.item(), 2),
+                "y_min": round(y1.item(), 2),
+                "x_max": round(x2.item(), 2),
+                "y_max": round(y2.item(), 2),
+            }
+        )
+        processed_scores.append(keep_scores[i].item())
 
         # Add the bounding box to the image
         cv2.rectangle(image, (int(x1), int(y1)), (int(x2), int(y2)), color=(0, 0, 255), thickness=3)
@@ -82,7 +90,7 @@ def process_result(prediction: dict, image: np.ndarray, NMS_threshold: float = 0
             thickness=2,
         )
 
-    return image
+    return image, processed_boxes, processed_scores
 
 
 def object_detection(image: bytes, backend: str) -> dict:
@@ -181,7 +189,7 @@ def main() -> None:
                     result[key] = torch.tensor(result[key])
                 # Cnvert the image to a numpy array
                 image = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
-                processed_image = process_result(result, image)
+                processed_image, processed_boxes, processed_scores = process_result(result, image)
                 # Resize the image to the original size
                 processed_image = cv2.resize(processed_image, (image.shape[1], image.shape[0]))
 
@@ -189,12 +197,12 @@ def main() -> None:
                 st.image(processed_image, caption="Detected Starfish", width=800, channels="BGR")
 
                 # Make a histogram of the scores
-                fig = plot_confidence_histogram(result["scores"])
+                fig = plot_confidence_histogram(processed_scores)
                 st.pyplot(fig)
 
                 # Show the predicted bounding boxes
                 st.write("### Predicted Bounding Boxes:")
-                st.write(result["boxes"])
+                st.write(processed_boxes)
         else:
             st.error("Failed to get prediction")
 

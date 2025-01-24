@@ -146,6 +146,7 @@ The project largely turned out as we wanted. The main change we made was to use 
 > Answer:
 
 We used the third-party image augmentation library, [Albumentations](https://github.com/albumentations-team/albumentations). This framework supports a wide range of computer vision tasks, including object detection, which makes it well suited for our project. Furthermore it is the fastest available augmentation library which was important given the size of our dataset. We used Albumentations to enhance our training dataset by applying various transformations such as random rotations, flips, scaling, and color adjustments to the images. These augmentations were applied to prevent overfitting and improve the model's generalization capabilities.
+Overall Albumentations was pretty easy to implement with the only exeptions that using np.random.seed(0) random.seed(0) pl.seed_everything(0) didn't fix the random augmentations which we only discovered when we started logging training images. Turns out you have to pass a random seed to the transform class.
 
 ## Coding environment
 
@@ -359,11 +360,13 @@ We did several things to ensure reproducibility. First, all parameters and hyper
 torch.manual_seed(0)
 np.random.seed(0)
 random.seed(0)
+pl.seed_everything(0)
 
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"  # sets CuBLAS workspace configuration for deterministic behavior
 torch.backends.cudnn.deterministic = True  # ensures that the CUDA backend produces deterministic results
 torch.backends.cudnn.benchmark = False  # disables CuDNN benchmarking, which can introduce non-deterministic behavior
 ```
+We did however discover that Albumentation introduced some randomness even with all the random seeds set.  We managed to fix it by using a seen in the transforms.
 
 ### Question 14
 
@@ -384,9 +387,9 @@ We made use of W&B for experiment tracking. The faster R-CNN uses a sum of diffe
 However not all the losses from the faster R-CNN seam to be applicaple like map_per_classes as we only have one class so it stays at -1 during all of training. We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top n predictions with the highest confidence score.(The images are from the start of training so very little overlap with predictions and targets)
 Logging images with the predictions and targets on allows us to visually see if the model is learning what we want where it can be harder to understand what a mAP of 0.04 compared to a map of 0.01 means.
 Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
-[image_logging](figures/image_logging.png)
-[loss_logging](figures/loss_logging.png)
-[sweep](figures/sweep.png)
+![image_logging](figures/image_logging.png)
+![loss_logging](figures/loss_logging.png)
+![sweep](figures/sweep.png)
 
 ### Question 15
 
@@ -435,7 +438,7 @@ Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97%
 > Answer:
 
 
-We used Cloud Build with a Trigger to automatically build our dockerfiles and then push the images to the Artifact Registry, which is for storing software artifacts such as Docker images. 
+We used Cloud Build with a Trigger to automatically build our dockerfiles and then push the images to the Artifact Registry, which is for storing software artifacts such as Docker images.
 Cloud Bucket is used to store objects such as data or models. We created a bucket for our data in GCP, one for the PyTorch model we deploy, one for the ONNX version of the model, and one to store data fed into the model during deployment for monitoring purposes.
 Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
 Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.
@@ -463,8 +466,8 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
-[GCP Buckets](figures/buckets.png)
-[Bucket with data](figures/bucket_data.png)
+![GCP Buckets](figures/buckets.png)
+![Bucket with data](figures/bucket_data.png)
 
 ### Question 20
 
@@ -473,8 +476,8 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
-[GCP Artifact Registry](figures/artifact_registry.png)
-[Repository for frontend and backend images](figures/artifact_registry_frontend_backend.png)
+![GCP Artifact Registry](figures/artifact_registry.png)
+![Repository for frontend and backend images](figures/artifact_registry_frontend_backend.png)
 
 ### Question 21
 
@@ -498,7 +501,7 @@ We did not make use of the Compute Engine in our project since we used Vertex AI
 >
 > Answer:
 
-Yes, we trained our model in the cloud using Vertex AI. We chose this over the Compute Engine so the VM would close automatically when the training was complete. First, this required a `train` image built from `train.dockerfile` to be in the Artifact Registry, which we did automatically with a Cloud Build Trigger. We pointed to this image in `vertex_ai_config.yaml`, which also specified our desired machine type. Then we filled out `vertex_ai_train.yaml`, which fetched the Wandb API key stored as a Secret on the cloud and included the command to run a custom AI job. 
+Yes, we trained our model in the cloud using Vertex AI. We chose this over the Compute Engine so the VM would close automatically when the training was complete. First, this required a `train` image built from `train.dockerfile` to be in the Artifact Registry, which we did automatically with a Cloud Build Trigger. We pointed to this image in `vertex_ai_config.yaml`, which also specified our desired machine type. Then we filled out `vertex_ai_train.yaml`, which fetched the Wandb API key stored as a Secret on the cloud and included the command to run a custom AI job.
 We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line to start the job. We then went into the `Custom Jobs` tab in the `Training` section of Vertex AI to monitor the training process as well as the Wandb dashboard.
 
 ## Deployment
@@ -516,11 +519,9 @@ We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line 
 >
 > Answer:
 
-We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
+We did manage to write an inference API for our model using the FastAPI library. We hosted the trained model in a Google Cloud Storage Bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
 
-Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
-
-Furthermore we built a frontend for this API using the `streamlit` library. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+Additionally we automated the build of the Docker image required for deploying the backend. Every commit to the main branch triggers an automatic build of the Dockerfile and automatic pushing to the Artifact Registry. This simplified our workflow and minimized potential deployment errors.
 
 ### Question 24
 
@@ -536,7 +537,12 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 24 fill here ---
+We did deploy our API in the cloud. Once the backend docker image was in the Artifact Registry, we used the `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` command for deployment. This deployed service is available at [https://backend-638730968773.us-central1.run.app](https://backend-638730968773.us-central1.run.app) and can be invoked through a curl command:
+```bash
+curl -X 'POST' 'https://backend-638730968773.us-central1.run.app/inference/' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'data=@PATH_TO_IMAGE;type=image/jpeg'
+```
+Furthermore, we built a frontend for this deployed API using the `streamlit` library. So a user can also invoke the API by uploading an image to the webpage `https://frontend-638730968773.us-central1.run.app`. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
+
 
 ### Question 25
 
@@ -551,7 +557,9 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 25 fill here ---
+We performed both unit testing and load testing of our API. The unit tests were made with a script that requests our deployed endpoints. We had four different unit tests. The first two tests contact the back- and frontend respectively. Finally, we had two tests of the inference response for inference with the PyTorch and ONNX models respectively.
+
+We did load testing with Locust. Here we stress tested the contacting the backend and doing inference with the regular model. We gave the backend endpoint a priority of one and the inference test a priority of three. After adding new endpoints, we did not add new tests to the locust file.
 
 ### Question 26
 
@@ -585,7 +593,7 @@ Furthermore we built a frontend for this API using the `streamlit` library. Now 
 >
 > Answer:
 
---- question 27 fill here ---
+- s195398 had used a little more than $11.
 
 ### Question 28
 
@@ -619,7 +627,17 @@ When a user uploads an image, the frontend sends it to the backend API, which pr
 >
 > Answer:
 
---- question 29 fill here ---
+When developing this project, we started in our local setup, where we created a repository from a CookieCutter template. There, we used PyTorch Lightning as boilerplate to avoid repetitive coding. We used this to develop our model. To develop our code, we had to use a lot of different packages, which is why having a dedicated Python environment is useful. We all used Conda. To optimize and debug our model, we used PyTorch profiler and PDB.
+
+To get the data locally for our model, we used Google Cloud data storage because we had problems with DVC pull. However, we could push data with DVC pull.
+
+The model can be configured in different ways depending on local or cloud-based use cases which is why we used Hydra. We also used one place where we used Typer instead of Hydra due to a misunderstanding. Before pushing we used Pre-Commit-Hooks. We of course used Git for version control.
+
+Once we have our model, we can convert it to ONNX to make it more lightweight and compatible with many other deep learning frameworks. We then store both our PyTorch model and ONNX model in a Google Cloud Bucket. This bucket also stores experimental loggings from Wandb. From this bucket, our FastAPI fetches the models depending on the requested endpoint from the frontend, which displays the result for the end-user.
+
+When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, the Cloud Run and Vertex AI can consume our containers. Tthe Cloud Run deploys both our back- and frontend. These can then save their image and predictions in another Google Cloud data storage for monitoring.
+
+![alt text](MLOPS-stack.png)
 
 ### Question 30
 
@@ -634,6 +652,7 @@ When a user uploads an image, the frontend sends it to the backend API, which pr
 > Answer:
 
 Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
+Faster R-CNN model also gave a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions.
 
 ### Question 31
 

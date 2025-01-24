@@ -114,16 +114,6 @@ def deploy_frontend(ctx):
         pty=not WINDOWS,
     )
 
-
-@task
-def front_backend(ctx):
-    ctx.run(
-        "gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080",
-        echo=True,
-        pty=not WINDOWS,
-    )
-
-
 @task
 def run_train_image(ctx):
     ctx.run("docker run --rm --name RUN_NAME IMAGE_NAME:latest", echo=True, pty=not WINDOWS)
