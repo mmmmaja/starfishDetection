@@ -381,8 +381,8 @@ We did, however, discover that Albumentations introduced some randomness even wi
 
 We made use of W&B for experiment tracking. The Faster R-CNN uses a sum of different losses which we all track. This is important to understand which loss terms are contributing the most to the training. We implemented Mean-Average-Precision (mAP) and Intersection Over Union (IoU) using torchmetrics as well, yielding a total of 39 different metrics. These are generally used for object recognition tasks to capture model performance.
 However, not all the losses from the Faster R-CNN seem to be applicaple like `map_per_classes`. As we only have one class, it stays at -1 during all of training. We also implemented image logging with overlay for the ground truth of the bounding boxes for the starfish and the top-n predictions with the highest confidence score. Note the images are from the start of training so there is very little overlap between predictions and targets.
-Logging images with the predictions and targets on allows us to visually see if the model is learning what we want where it can be harder to understand what a mAP of 0.04 compared to a map of 0.01 means.
-Logging can however quickly become computationally expensive especially with the faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
+Logging images with the predictions and targets on allows us to visually see if the model is learning what we want, especially since it can be harder to understand what an mAP of 0.04 compared to a map of 0.01 means.
+Logging can, however, quickly become computationally expensive, especially with the Faster R-CNN model where we have to put the model in eval mode and then do another forward pass to get predictions instead of the loss. We have therefore implemented logging at fixed intervals during training.
 ![image_logging](figures/image_logging.png)
 ![loss_logging](figures/loss_logging.png)
 ![sweep](figures/sweep.png)
@@ -400,7 +400,7 @@ Logging can however quickly become computationally expensive especially with the
 >
 > Answer:
 
-We used docker in our project to containerize the training, backend, and frontend portions of the project. We wrote one dockerfile for each of these parts and then set up automatic building and pushing using Cloud Build and a trigger that listened for pushes to the master branch of our repository. All of our images were stored in the Artifact Registry. We then accessed our training image with Vertex AI to set up training runs and used our backend and frontend images in Cloud Run for deployment of our API and application. Our training image can be run with the `invoke train-vertex` command. Our backend and frontend images can be run on the cloud with `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` and `gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080`, respectively. You can find all of our dockerfiles in the [dockerfiles](../dockerfiles) subfolder of our repository. For example, our training dockerfile is [here](../dockerfiles/train.dockerfile).
+We used docker in our project to containerize the training, backend, and frontend portions of the project. We wrote one dockerfile for each of these parts and then set up automatic building and pushing using Cloud Build and a trigger that listened for pushes to the master branch of our repository. All of our images were stored in the Artifact Registry. We then accessed our training image with Vertex AI to set up training runs and used our backend and frontend images in Cloud Run for deployment of our API and application. Our training image can be run with the `invoke train-vertex` command. Our backend and frontend images can be run on the cloud with `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` and `gcloud run deploy frontend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/frontend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080`, respectively. We also set up automatic deployment of the backend and frontend with the trigger, so these commands are not strictly needed. You can find all of our dockerfiles in the [dockerfiles](../dockerfiles) subfolder of our repository. For example, our training dockerfile is [here](../dockerfiles/train.dockerfile).
 
 ### Question 16
 
@@ -415,8 +415,8 @@ We used docker in our project to containerize the training, backend, and fronten
 >
 > Answer:
 
-We used pdb at one point and another point used gihub history to find that the optimizer accidentaly was changed to ADAM.
-Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97% when profiling a two batches. The following slowest are all internal model function calls like aten::conv2d and we have to go very far down get to any code we have touched which is the dataloader. In general we found that the fasterrcnn_resnet50_fpn contrary to its name was really slow and when trying to run in with mps as gpu the runtime increased by orders of magnitude. I think that this is because some backend pytorch function aren't ported to mps yet which results in alot of moving data between cpu and gpu.
+We used pdb to debug and also used the GitHub version history to find that the optimizer was accidentally changed to Adam from SGD.
+Optimizer.step#SGD.step took the most CPU time in profiling of a total of 85.97% when profiling two batches. The next slowest are all internal model function calls like aten::conv2d, and we have to go very far down get to any code we have touched which is the dataloader. In general we found that the fasterrcnn_resnet50_fpn contrary to its name was really slow and when trying to run it with mps as the GPU the runtime increased by orders of magnitude. I think that this is because some backend PyTorch function aren't ported to mps yet, which results in a lot of moving data between CPU and GPU.
 
 ## Working in the cloud
 
@@ -438,7 +438,7 @@ We used Cloud Build with a Trigger to automatically build our dockerfiles and th
 Cloud Bucket is used to store objects such as data or models. We created a bucket for our data in GCP, one for the PyTorch model we deploy, one for the ONNX version of the model, and one to store data fed into the model during deployment for monitoring purposes.
 Vertex AI is used for spinning up a virtual machine with compute resources, running a Docker container, and then shutting down the machine. We used this to train models.
 Secret is used for storing objects that should not be made available to users or potentially other developers. We used Secret to store a Wandb API key.
-We used Cloud Run for creating docker containers for our backend and frontend.
+We used Cloud Run for creating docker containers for our backend and frontend. Cloud Run is a serverless service for running containerized applications.
 
 ### Question 18
 
@@ -453,7 +453,7 @@ We used Cloud Run for creating docker containers for our backend and frontend.
 >
 > Answer:
 
-We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end. Much of the training ended up being run on a hpc cluster one of the group members have access to with nvidia a100 gpus.
+We did not make use of the Compute Engine in our project since we used Vertex AI instead. However, if we had used it we would have created an e2-medium instance or an NVIDIA T4 instance if we had GPU access and used a base image with Python and PyTorch. Then we would have SSH'd into the VM, cloned our repository, and trained a model. We would have had to close the instance at the end. Much of the training ended up being run on an HPC cluster one of the group members has access to with NVIDIA A100 GPUs.
 
 ### Question 19
 
@@ -516,9 +516,7 @@ We ran `gcloud builds submit --config=vertex_ai_train.yaml` in the command line 
 >
 > Answer:
 
-We did manage to write an inference API for our model using the FastAPI library. We hosted the trained model in a Google Cloud Storage Bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
-
-Additionally we automated the build of the Docker image required for deploying the backend. Every commit to the main branch triggers an automatic build of the Dockerfile and automatic pushing to the Artifact Registry. This simplified our workflow and minimized potential deployment errors.
+We did manage to write an inference API for our model using the FastAPI library. We hosted the trained model in a Google Cloud Storage Bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores. Additionally, we automated the building and pushing of the Docker image and also the deployment itself. Every commit to the master branch triggers an automatic build of the Dockerfile, automatic pushing to the Artifact Registry, and deployment of a container in Cloud Run. This simplified our workflow and minimized potential deployment errors.
 
 ### Question 24
 
@@ -534,7 +532,7 @@ Additionally we automated the build of the Docker image required for deploying t
 >
 > Answer:
 
-We did deploy our API in the cloud. Once the backend docker image was in the Artifact Registry, we used the `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` command for deployment. This deployed service is available at [https://backend-638730968773.us-central1.run.app](https://backend-638730968773.us-central1.run.app) and can be invoked through a curl command:
+We did deploy our API in the cloud. Once the backend docker image was in the Artifact Registry, we used the `gcloud run deploy backend --image=us-central1-docker.pkg.dev/starfish-detection/frontend-backend/backend:latest --region=us-central1 --platform=managed --allow-unauthenticated --port=8080` command for deployment, or alternatively had this happen automatically as described above. This deployed service is available at [https://backend-638730968773.us-central1.run.app](https://backend-638730968773.us-central1.run.app) and can be invoked through a curl command:
 ```bash
 curl -X 'POST' 'https://backend-638730968773.us-central1.run.app/inference/' -H 'accept: application/json' -H 'Content-Type: multipart/form-data' -F 'data=@PATH_TO_IMAGE;type=image/jpeg'
 ```
@@ -554,9 +552,7 @@ Furthermore, we built a frontend for this deployed API using the `streamlit` lib
 >
 > Answer:
 
-We performed both unit testing and load testing of our API. The unit tests were made with a script that requests our deployed endpoints. We had four different unit tests. The first two tests contact the back- and frontend respectively. Finally, we had two tests of the inference response for inference with the PyTorch and ONNX models respectively.
-
-We did load testing with Locust. Here we stress tested the contacting the backend and doing inference with the regular model. We gave the backend endpoint a priority of one and the inference test a priority of three. After adding new endpoints, we did not add new tests to the locust file.
+We performed both unit testing and load testing of our API. The unit tests were made with a script that requests our deployed endpoints, checks the response codes, and confirms images can be fed in as POST requests where appropriate. In particular, we contact all three endpoints of the backend (root, standard inference, and ONNX inference) and also contact the frontend. We did load testing with Locust. Here we stress tested contacting the backend and doing inference with the regular model. We gave the backend endpoint a priority of one and the inference test a priority of three. We found that the root consistently worked as up to ten users were simulated, but the inference endpoint failed sometimes when being triggered simultaneously by several users. This is also reflected in our GitHub actions test results, where the API tests will sometimes pass for some of the operating systems and versions but not all of them.
 
 ### Question 26
 
@@ -571,9 +567,7 @@ We did load testing with Locust. Here we stress tested the contacting the backen
 >
 > Answer:
 
-We implemented monitoring for our deployed model using the Evidently framework. The monitoring pipeline detects data drift by comparing the input feature distributions of the current inference data to the reference (training) data stored in GCP buckets. Features such as brightness, contrast, and sharpness are extracted from images, along with color histograms, to quantify changes in input data over time. Evidently generates detailed HTML reports with metrics like Data Drift Tables and column-specific drift metrics.
-
-Monitoring is crucial for maintaining model performance. By detecting data drift early, we can proactively retrain the model on updated data to address shifts in the input distribution, preventing performance degradation. This ensures our application remains robust and accurate in the face of real-world changes.
+We implemented monitoring using the Evidently framework with an additional API accessible [here](https://data-drift-638730968773.us-central1.run.app). Contact the `/report_images` and `/drift_report` endpoints to see our results. The monitoring pipeline detects data drift by comparing the input feature distributions of the current inference data to the reference (training) data stored in GCP buckets. Features such as brightness, contrast, and sharpness are extracted from the images, along with color histograms, to quantify changes in the input data over time. Evidently generates detailed HTML reports with metrics like Data Drift Tables and column-specific drift metrics. Monitoring is crucial for maintaining model performance. By detecting data drift early, we can proactively retrain the model on updated data to address shifts in the input distribution, preventing performance degradation. This ensures our application remains robust and accurate despite shifting data patterns. The next step would be to monitor the deployed model directly by analyzing its predictions on input data to get a sense of its robustness.
 
 ## Overall discussion of project
 
@@ -592,7 +586,7 @@ Monitoring is crucial for maintaining model performance. By detecting data drift
 >
 > Answer:
 
-We used s247157's credits during the project, totalling $8.51 used for the project. This comes from $5.97 spent on Cloud Storage, $1.71 spent on Cloud Run, $0.75 spent on the Artifact Registry, $0.05 spent on Vertex AI, and $0.02 spent on Networking. Overall, we didn't spend many credits due to issues with getting the quota increased for Vertex AI GPUs and then being unable to access them. The Faster R-CNN model was hard to run locally for more than just a few batches due to the size of the model and also complications with MPS if you wanted to run it on GPU with Mac. So instead, we trained a model on Vertex AI using CPUs and we used a university HPC for GPU resources.
+We used s247157's credits during the project, totaling $8.51 used for the project. This comes from $5.97 spent on Cloud Storage, $1.71 spent on Cloud Run, $0.75 spent on the Artifact Registry, $0.05 spent on Vertex AI, and $0.02 spent on Networking. Overall, we didn't spend many credits due to issues with getting the quota increased for Vertex AI GPUs. The Faster R-CNN model was hard to run locally due to its size and also complications with MPS if you wanted to run it on GPU with Mac. So instead, we trained a model on Vertex AI using CPUs and we used an HPC for GPU resources. We were surprised Cloud Storage was the most expensive service for us since we expected storage to be cheap. We expected Cloud Run to be the most expensive since we had a backend, a frontend, and a data drift API all running on it. In general, working in the cloud gives you access to many useful resources that let you create applications that wouldn't be possible locally and make things public for the broader community. However, there is definitely a steep learning curve and a lot of components to wrap your mind around.
 
 ### Question 28
 
@@ -608,11 +602,9 @@ We used s247157's credits during the project, totalling $8.51 used for the proje
 >
 > Answer:
 
-Yes, we implemented a frontend for our API to provide users with an intuitive and interactive interface. It was build using the  `streamlit` library.
-When a user uploads an image, the frontend sends it to the backend API, which processes the image to detect starfish and returns bounding boxes along with confidence scores. The bounding boxes are then overlayed on the original image, and displayed. Additionally, we included a histogram that shows the distribution of confidence scores.
+Yes, we implemented a [frontend](https://frontend-638730968773.us-central1.run.app) for our API to provide users with an intuitive and interactive interface. It was build using the  `streamlit` library. When a user uploads an image, the frontend sends it to the backend API, which processes the image to detect starfish and returns bounding boxes along with confidence scores. The bounding boxes are then overlayed on the original image and displayed. Additionally, we included a histogram that shows the distribution of confidence scores.
 
-Additionally, we implemented a data drift detection API and deployed it on Google Cloud. The API generates reports by analyzing image statistics such as color histograms, brightness, and other metrics. It compares the distribution of the training data against the data uploaded by users when using the inference API. Both datasets are stored in a Google Cloud bucket.
-This deployed service is available at [https://data-drift-638730968773.us-central1.run.app](https://data-drift-638730968773.us-central1.run.app)
+We implemented a data drift detection API and deployed it on Google Cloud. The API generates reports by analyzing image statistics such as color histograms, brightness, and other metrics. It compares the distribution of the training data against the data uploaded by users when using the inference API. Both the original data and new data are stored in a Google Cloud bucket. This deployed service is available at [https://data-drift-638730968773.us-central1.run.app](https://data-drift-638730968773.us-central1.run.app)
 
 ### Question 29
 
@@ -629,15 +621,17 @@ This deployed service is available at [https://data-drift-638730968773.us-centra
 >
 > Answer:
 
-When developing this project, we started in our local setup, where we created a repository from a CookieCutter template. There, we used PyTorch Lightning as boilerplate to avoid repetitive coding. We used this to develop our model. To develop our code, we had to use a lot of different packages, which is why having a dedicated Python environment is useful. We all used Conda. To optimize and debug our model, we used PyTorch profiler and PDB.
+When developing this project, we started in our local setup, where we created a repository from the ML Ops CookieCutter template. There, we used PyTorch Lightning as boilerplate to avoid repetitive coding. We used this to develop our model. To develop our code, we had to use a lot of different packages, which is why having a dedicated Python environment is useful. We all used Conda. To optimize and debug our model, we used PyTorch profiler and pdb.
 
-To get the data locally for our model, we used Google Cloud data storage because we had problems with DVC pull. However, we could push data with DVC pull.
+We used dvc to push our local data to the Google Cloud Storage Bucket.
 
-The model can be configured in different ways depending on local or cloud-based use cases which is why we used Hydra. We also used one place where we used Typer instead of Hydra due to a misunderstanding. Before pushing we used Pre-Commit-Hooks. We of course used Git for version control.
+We wanted for it to be possible to configure the model in different ways depending on, for example, local or cloud-based-use cases, which is why we used Hydra. We also used Typer in our ONNX implementation. Before pushing we used Pre-Commit-Hooks, and we of course used Git and GitHub for version control.
 
-Once we have our model, we can convert it to ONNX to make it more lightweight and compatible with many other deep learning frameworks. We then store both our PyTorch model and ONNX model in a Google Cloud Bucket. This bucket also stores experimental loggings from Wandb. From this bucket, our FastAPI fetches the models depending on the requested endpoint from the frontend, which displays the result for the end-user.
+When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, Cloud Run and Vertex AI can consume our containers.
 
-When pushing to Git, our GitHub actions execute their workflows. These workflows include running all the unit, integration, and load tests, linting every file, and triggering the process of building and pushing our docker images to the artifact registry. From the artifact registry, the Cloud Run and Vertex AI can consume our containers. Tthe Cloud Run deploys both our back- and frontend. These can then save their image and predictions in another Google Cloud data storage for monitoring.
+Once we have our model, we can convert it to ONNX to make it more lightweight and compatible with many other deep learning frameworks. We then store both our PyTorch model and ONNX model in a Google Cloud Bucket. From this bucket, our FastAPI fetches the models depending on the requested endpoint, and the frontend displays the result for the end user.
+
+Cloud Run deploys both our back- and front-end. These can then save their image and predictions in another Google Cloud data storage bucket for monitoring purposes.
 
 ![alt text](figures/MLOPS-stack.png)
 
@@ -653,8 +647,7 @@ When pushing to Git, our GitHub actions execute their workflows. These workflows
 >
 > Answer:
 
-Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges.
-Faster R-CNN model also gave a lot of trouble as we were unable to run more the a few batches and trying to use gpus with mps made it orders of magnitude slower? The model also changes the forward methode when you switch between train and eval so you could only get the loss if the model was in train but you could only get the predictions if it was in eval which made logging hard because you would need two forward passes to get loss and predictions. Another thing was knowing how the overall structure of the project worked. Since the group had a lot of task delegated between the members, a lot of the project was made without the individual group member being involved which created challenges in having a good understanding of the entire project. But this is how it is out in the industry as well.
+Figuring out how to coordinate everyone's different branches and tasks was a bit challenging. It wasn't always clear how much progress had been made on different tasks, so communication about these things was needed. We also spent a lot of time on the API and getting the backend and frontend to run in the cloud. Giving the right access to the right service accounts was also a challenge. We asked the teaching staff for help and debugged together to overcome these challenges. The Faster R-CNN model also gave a lot of trouble as we were unable to run more than a few batches locally and trying to use GPUs with mps made it orders of magnitude slower somehow. The model also changes the forward method when you switch between the train and eval modes so you could only get the loss if the model was in train but you could only get the predictions if it was in eval, which made logging hard because you would need two forward passes to get the loss and predictions. It was also hard to keep everyone on the same page on all of the tasks since not everyone was involved in every component. Ultimately, working more collaboratively helped with this.
 
 ### Question 31
 
@@ -674,7 +667,7 @@ Faster R-CNN model also gave a lot of trouble as we were unable to run more the 
 
 s247157 set up dvc, added project commands, wrote the train dockerfile, ran the hyperparameter sweep, ran models in the cloud and on an HPC with distributed data loading and training, set up a cloud build trigger, created the GitHub Pages documentation, and contributed to unit and load testing, continuous integration, and API deployment.
 
-s243077 wrote the original data loading and model code, created the front- and back-end APIs, and contributed to the data drift API.
+s243077 wrote the original data loading and model code, created the front- and back-end APIs, and made the data drift API.
 
 s250797 worked on the training script structure, Hydra config files, and Wandb logging.
 
