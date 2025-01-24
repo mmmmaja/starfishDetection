@@ -41,7 +41,7 @@ async def lifespan(app: FastAPI):
     local_onnx_path = "/gcs/faster-rcnn-onnx/FasterRCNN.onnx"
 
     try:
-        model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2) # load torch model
+        model = FasterRCNNLightning.load_from_checkpoint(checkpoint_path=model_path, num_classes=2)  # load torch model
         providers = ["CUDAExecutionProvider"] if torch.cuda.is_available() else ["CPUExecutionProvider"]
         onnx_session = rt.InferenceSession(local_onnx_path, providers=providers)
     except Exception as e:
