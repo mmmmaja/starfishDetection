@@ -110,7 +110,7 @@ will check the repositories and the code to verify your answers.
 
 The project largely turned out as we wanted. The main change we made was to use the FasterRCNN model instead of the YOLO11 model. We made this switch primarily because it did not seem to be straightforward to modify the architecture of YOLO11 to support two classes, whereas this was an input parameter to FasterRCNN.
 * [ ] Create an architectural diagram over your MLOps pipeline
-* [ ] Make sure all group members have an understanding about all parts of the project
+* [X] Make sure all group members have an understanding about all parts of the project
 * [X] Uploaded all your code to GitHub
 
 ## Group information
@@ -495,13 +495,11 @@ CLOUD RUN ADD HERE
 >
 > Answer:
 
-We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API features two main endpoints:
-1. `\inference\` endpoint:
-   When a user uploads an image the API loads the model, executes predictions to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
-2. `\show\` endpoint:
-    Instead of returning raw predictions, this endpoint overlays the predicted bounding boxes and confidence scores directly onto the submitted image. Through this endpoint we were able to visually inspect model's detections and is especially useful for testing.
+We did manage to write an inference API for our model using FastAPI library. We hosted the trained model on a Google Cloud Storage bucket, allowing our backend script to load it during initialization. The API includes the `\inference\` endpoint that accepts image uploads, processes them to identify starfish, and returns the results as a JSON response containing bounding boxes and confidence scores.
 
 Additionally we automated the build of the Docker image required for the backend script. Every commit to the main branch triggers an automatic build of the Dockerfile. This simplified our workflow and minimized potential deployment errors.
+
+Furthermore we built a frontend for this API using the `streamlit` library. Now we can visually inspect the model's perdictions and analyze the distribution of confidence scores.
 
 ### Question 24
 
