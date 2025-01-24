@@ -5,8 +5,8 @@ from pathlib import Path
 import hydra
 import numpy as np
 import omegaconf
-import torch
 import pytorch_lightning as pl
+import torch
 from hydra.utils import instantiate
 from loguru import logger as log
 from omegaconf import DictConfig
