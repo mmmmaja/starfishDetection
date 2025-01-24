@@ -21,6 +21,8 @@ Task: Deploy a drift detection API to the cloud (M27)
 """
 
 
+
+
 def get_html(html_table: str, title: str) -> str:
     """
     Generate an HTML report with a title and a table
@@ -248,6 +250,11 @@ def download_images(bucket_name: str, n: int = 5, prefix: str = "data/raw/train_
         for file in os.listdir(os.path.join(data_path, folder)):
             if file.endswith(".jpg", ".jpeg", ".png"):
                 idx += 1
+                img_path = os.path.join(data_path, folder, file)
+                # Load the image
+                img = cv2.imread(img_path)
+                images.append(img)
+
                 if idx >= n:
                     break
     print(f"Download image data: ({len(images)})")
@@ -366,3 +373,12 @@ async def get_drift_report(n: int = 5) -> HTMLResponse:
         html_content = await f.read()
 
     return HTMLResponse(content=html_content, status_code=200)
+
+
+# Define the root endpoint
+@app.get("/")
+async def root() -> dict:
+    """
+    Root endpoint.
+    """
+    return {"message": "Hello from the data drift module!"}
