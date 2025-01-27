@@ -19,7 +19,7 @@ invoke==2.2.0
 loguru==0.7.3
 pytest==8.3.4
 auto_mix_prep==0.2.0
-opencv_contrib_python==4.10.0.84
+opencv_contrib_python==4.11.0.86
 python-multipart==0.0.20
 streamlit==1.41.1
 gunicorn==23.0.0
